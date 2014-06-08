@@ -22,11 +22,11 @@
             <argument type="service" id="exploring.filemanager"/>
         </service>
 
-        <service id="exploring.imageengine.gd" class="%exploring_imageengine_gd_class%">
+        <service id="exploring.imageengine.gd" class="%exploring_imageengine_gd_class%" public="false">
             <argument type="service" id="exploring.filemanager"/>
         </service>
 
-        <service id="exploring.imageengine.imagick" class="%exploring_imageengine_imagick_class%">
+        <service id="exploring.imageengine.imagick" class="%exploring_imageengine_imagick_class%" public="false">
             <argument type="service" id="exploring.filemanager"/>
         </service>
     </services>

@@ -104,15 +104,16 @@
         }
 
         /**
-         * @param string $directory
          * @param string $filename
+         * @param string $directory
          * @param int    $width
          * @param int    $height
+         * @param bool   $enlarge
          *
          * @throws ImageProcessorException
          * @return string
          */
-        public function scaleImage($filename, $directory, $width, $height = 0)
+        public function scaleImage($filename, $directory, $width, $height = 0, $enlarge = true)
         {
             $file = new File($filename, true);
 
@@ -139,20 +140,25 @@
                 throw new ImageProcessorException("Couldn't create source image.");
             }
 
-            $scaledFileName = $this->fileNameGenerator->createScaled($file->getFilename(), $width, $height);
-
-            $destination = $this->fileManager->getAbsolutePath($directory, $scaledFileName);
-
             $isLandscape = $w > $h;
-
             $ratio = $isLandscape ? $w / $h : $h / $w;
 
             if ($width == 0) {
+                if ($height > $h && !$enlarge) {
+                    $height = $h;
+                }
                 $width = $isLandscape ? $height * $ratio : $height / $ratio;
             }
             else if ($height == 0) {
+                if ($width > $w && !$enlarge) {
+                    $width = $w;
+                }
                 $height = $isLandscape ? $width / $ratio : $width * $ratio;
             }
+
+            $scaledFileName = $this->fileNameGenerator->createScaled($file->getFilename(), $width, $height);
+
+            $destination = $this->fileManager->getAbsolutePath($directory, $scaledFileName);
 
             $NewImage = imagecreatetruecolor($width, $height);
             imagecopyresampled($NewImage, $Image, 0, 0, 0, 0, $width, $height, $w, $h);

@@ -41,23 +41,24 @@
         public abstract function clipImage($filename, $directory, $mask_path);
 
         /**
-         * @param string $directory
          * @param string $filename
+         * @param string $directory
          * @param int    $size
+         * @param bool   $enlarge
          *
          * @return string
          */
-        public function scaleLargeEdge($filename, $directory, $size)
+        public function scaleLargeEdge($filename, $directory, $size, $enlarge = true)
         {
             $dim = $this->getImageSize($filename);
 
             $landscape = $dim['width'] > $dim['height'];
 
             if ($landscape) {
-                return $this->scaleImage($filename, $directory, $size, 0);
+                return $this->scaleImage($filename, $directory, $size, 0, $enlarge);
             }
             else {
-                return $this->scaleImage($filename, $directory, 0, $size);
+                return $this->scaleImage($filename, $directory, 0, $size, $enlarge);
             }
         }
 
@@ -69,14 +70,15 @@
         public abstract function getImageSize($filename);
 
         /**
-         * @param string $directory
          * @param string $filename
+         * @param string $directory
          * @param int    $width
          * @param int    $height
+         * @param bool   $enlarge
          *
          * @return string
          */
-        public abstract function scaleImage($filename, $directory, $width, $height = 0);
+        public abstract function scaleImage($filename, $directory, $width, $height = 0, $enlarge = true);
 
         /**
          * @return FileManager

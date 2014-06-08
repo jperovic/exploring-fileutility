@@ -45,15 +45,16 @@
         }
 
         /**
-         * @param string $directory
          * @param string $filename
+         * @param string $directory
          * @param int    $size
+         * @param bool   $enlarge
          *
          * @return string
          */
-        public function scaleLargeEdge($filename, $directory, $size)
+        public function scaleLargeEdge($filename, $directory, $size, $enlarge = true)
         {
-            return $this->engine->scaleImage($filename, $directory, $size);
+            return $this->engine->scaleLargeEdge($filename, $directory, $size, $enlarge);
         }
 
         /**
