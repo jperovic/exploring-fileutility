@@ -68,16 +68,17 @@
         }
 
         /**
-         * @param string $directory
          * @param string $filename
+         * @param string $directory
          * @param int    $width
          * @param int    $height
+         * @param bool   $enlarge
          *
          * @return string
          */
-        public function scaleImage($filename, $directory, $width, $height = 0)
+        public function scaleImage($filename, $directory, $width, $height = 0, $enlarge = true)
         {
-            return $this->engine->scaleImage($filename, $directory, $width, $height);
+            return $this->engine->scaleImage($filename, $directory, $width, $height, $enlarge);
         }
 
         /**
