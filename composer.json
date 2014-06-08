@@ -1,0 +1,16 @@
+{
+    "name": "exploring/fileutility",
+    "license": "MIT",
+    "type": "library",
+    "description": "File utility bundle",
+    "require": {
+        "php": ">=5.3.3",
+        "symfony/http-foundation": "2.*"
+    },
+    "target-dir": "Exploring/FileUtilityBundle",
+    "autoload": {
+        "psr-0": {
+            "": "./"
+        }
+    }
+}
