@@ -3,8 +3,6 @@
 
     use Exploring\FileUtilityBundle\Utility\NameGenerator\DefaultFilenameGenerator;
     use Exploring\FileUtilityBundle\Utility\NameGenerator\FilenameGenerator;
-    use Exploring\FileUtilityBundle\Service\File\FileManagerException;
-    use Exploring\FileUtilityBundle\Service\File\Transaction;
     use Symfony\Component\HttpFoundation\File\File;
 
     /**
@@ -51,7 +49,7 @@
          */
         function __construct($folders, $uploadsRoot = self::UPLOAD_DIR, $filenameGenerator = null)
         {
-            $this->uploadsRoot = DIRECTORY_SEPARATOR . trim(DIRECTORY_SEPARATOR . $uploadsRoot, DIRECTORY_SEPARATOR);
+            $this->uploadsRoot = rtrim($uploadsRoot, DIRECTORY_SEPARATOR);
             $this->filenameGenerator = $filenameGenerator ? $filenameGenerator : new DefaultFilenameGenerator();
 
             foreach ($folders as $k => $f) {
@@ -165,11 +163,11 @@
             $realPath = realpath($this->uploadSubPaths[$directory]);
 
             if (!$realPath) {
-                throw new FileManagerException("Missing destination");
+                throw new FileManagerException(sprintf("Missing destination for directory \"%s\". Tried: \"%s\"", $directory, $this->uploadSubPaths[$directory]));
             }
 
             if (!is_writable($realPath)) {
-                throw new FileManagerException(sprintf("Directory \"%s\" not writable.", $directory));
+                throw new FileManagerException(sprintf("Directory \"%s\" not writable. Tried to write to: \"%s\"", $directory, $realPath));
             }
 
             return $realPath . DIRECTORY_SEPARATOR;
@@ -209,7 +207,7 @@
         public function commit()
         {
             if (!$this->hasActiveTransaction()) {
-                throw new FileManagerException("No active transaction.");
+                return $this;
             }
 
             do {
