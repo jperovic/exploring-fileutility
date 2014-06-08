@@ -8,6 +8,7 @@
         "symfony/http-foundation": "2.*"
     },
     "target-dir": "Exploring/FileUtilityBundle",
+    "minimum-stability": "dev",
     "autoload": {
         "psr-0": {
             "": "./"
