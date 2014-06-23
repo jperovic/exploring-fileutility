@@ -1,9 +1,12 @@
 <?php
     namespace Exploring\FileUtilityBundle\Service\File;
 
+    use Exploring\FileUtilityBundle\Data as Data;
     use Exploring\FileUtilityBundle\Utility\NameGenerator\DefaultFilenameGenerator;
-    use Exploring\FileUtilityBundle\Utility\NameGenerator\FilenameGenerator;
+    use Exploring\FileUtilityBundle\Utility\NameGenerator\FilenameGeneratorInterface;
+    use InvalidArgumentException;
     use Symfony\Component\HttpFoundation\File\File;
+    use Symfony\Component\HttpFoundation\File\UploadedFile;
 
     /**
      * Created by JetBrains PhpStorm.
@@ -22,10 +25,10 @@
 
         const QUEUE_TEMP = "__temp__";
 
-        /**exploring_file_utility
+        /**
          * @var string[]
          */
-        private $uploadSubPaths = array();
+        private $directoryAliases = array();
 
         /**
          * @var string
@@ -33,7 +36,7 @@
         private $uploadsRoot;
 
         /**
-         * @var FilenameGenerator
+         * @var FilenameGeneratorInterface
          */
         private $filenameGenerator;
 
@@ -43,17 +46,20 @@
         private $transactions = array();
 
         /**
-         * @param array             $folders
-         * @param string            $uploadsRoot
-         * @param FilenameGenerator $filenameGenerator
+         * @param array                             $directoryAliases
+         * @param string                            $uploadsRoot
+         * @param FilenameGeneratorInterface|string $filenameGenerator
+         *
+         * @throws InvalidArgumentException
          */
-        function __construct($folders, $uploadsRoot = self::UPLOAD_DIR, $filenameGenerator = null)
+        function __construct($directoryAliases, $uploadsRoot = self::UPLOAD_DIR, FilenameGeneratorInterface $filenameGenerator = null)
         {
             $this->uploadsRoot = rtrim($uploadsRoot, DIRECTORY_SEPARATOR);
+
             $this->filenameGenerator = $filenameGenerator ? $filenameGenerator : new DefaultFilenameGenerator();
 
-            foreach ($folders as $k => $f) {
-                $this->uploadSubPaths[$k] = $this->uploadsRoot . ($f ? DIRECTORY_SEPARATOR . $f : '') . DIRECTORY_SEPARATOR;
+            foreach ($directoryAliases as $alias => $directory) {
+                $this->directoryAliases[$alias] = $this->uploadsRoot . ($directory ? DIRECTORY_SEPARATOR . $directory : '') . DIRECTORY_SEPARATOR;
             }
 
             $this->transactions = array();
@@ -98,15 +104,15 @@
         }
 
         /**
-         * @param File|string $file
-         * @param string      $directory
-         * @param bool        $temp
+         * @param UploadedFile|string $file
+         * @param string              $directoryAlias
+         * @param bool                $temp
          *
-         * @return string
+         * @return Data\File
          */
-        public function save($file, $directory, $temp = false)
+        public function save($file, $directoryAlias, $temp = false)
         {
-            return $this->getTransaction()->save($file, $directory, $temp);
+            return $this->getTransaction()->save($file, $directoryAlias, $temp);
         }
 
         /**
@@ -135,69 +141,110 @@
         }
 
         /**
-         * @param string $directory
          * @param string $filename
+         * @param string $directoryAlias
          * @param bool   $check
          *
          * @return string
          */
-        public function getAbsolutePath($directory, $filename, $check = false)
+        public function getAbsolutePath($filename, $directoryAlias, $check = false)
         {
-            $handle = new File($this->getUploadPath($directory) . $filename, $check);
+            $handle = new File($this->getUploadPath($directoryAlias) . $filename, $check);
 
             return $handle->getPath() . DIRECTORY_SEPARATOR . $handle->getFilename();
         }
 
         /**
-         * @param string $directory
+         * @param Data\File $file
+         *
+         * @return string
+         */
+        public function getAbsolutePathOfFile(Data\File $file)
+        {
+            return $this->getAbsolutePath($file->getName(), $file->getDirectoryAlias());
+        }
+
+        /**
+         * @param string $alias
          *
          * @throws FileManagerException
          * @return null|string
          */
-        public function getUploadPath($directory)
+        public function getUploadPath($alias)
         {
-            if (!array_key_exists($directory, $this->uploadSubPaths)) {
-                throw new FileManagerException(sprintf("Directory \"%s\" not registered.", $directory));
+            if (!array_key_exists($alias, $this->directoryAliases)) {
+                $availableAliases = implode(
+                    ',',
+                    array_map(
+                        function ($item) {
+                            return "\"$item\"";
+                        },
+                        array_keys($this->directoryAliases)
+                    )
+                );
+                throw new FileManagerException(sprintf(
+                    "Directory alias \"%s\" was not defined. Available aliases are: [%s]",
+                    $alias,
+                    $availableAliases
+                ));
             }
 
-            $realPath = realpath($this->uploadSubPaths[$directory]);
+            $realPath = realpath($this->directoryAliases[$alias]);
 
             if (!$realPath) {
-                throw new FileManagerException(sprintf("Missing destination for directory \"%s\". Tried: \"%s\"", $directory, $this->uploadSubPaths[$directory]));
+                throw new FileManagerException(sprintf(
+                    "Path to directory alias \"%s\" does not exist. Tried: \"%s\"",
+                    $alias,
+                    $this->directoryAliases[$alias]
+                ));
             }
 
             if (!is_writable($realPath)) {
-                throw new FileManagerException(sprintf("Directory \"%s\" not writable. Tried to write to: \"%s\"", $directory, $realPath));
+                throw new FileManagerException(sprintf(
+                    "Path of directory alias \"%s\" is not writable. Tried to write to: \"%s\"",
+                    $alias,
+                    $realPath
+                ));
             }
 
             return $realPath . DIRECTORY_SEPARATOR;
         }
 
-        public function stripAbsolutePath($path, $directory)
+        public function stripAbsolutePath($path, $directoryAlias)
         {
-            if ($directory == null) {
+            if ($directoryAlias == null) {
                 return $path;
             }
 
-            $dirpath = $this->getUploadPath($directory);
+            $dirpath = $this->getUploadPath($directoryAlias);
             if (strpos($path, $dirpath) === 0) {
                 return substr($path, strlen($dirpath));
             }
 
-            return NULL;
+            return null;
         }
 
         /**
          * @param string $filename
-         * @param string $directory
+         * @param string $directoryAlias
          *
          * @return $this
          */
-        public function remove($filename, $directory)
+        public function remove($filename, $directoryAlias)
         {
-            $this->getTransaction()->remove($filename, $directory);
+            $this->getTransaction()->remove($filename, $directoryAlias);
 
             return $this;
+        }
+
+        /**
+         * @param Data\File $file
+         *
+         * @return $this
+         */
+        public function removeFile(Data\File $file)
+        {
+            return $this->remove($file->getName(), $file->getDirectoryAlias());
         }
 
         /**
@@ -221,15 +268,15 @@
         }
 
         /**
-         * @param FilenameGenerator $filenameGenerator
+         * @param FilenameGeneratorInterface $filenameGenerator
          */
-        public function setFilenameGenerator(FilenameGenerator $filenameGenerator)
+        public function setFilenameGenerator(FilenameGeneratorInterface $filenameGenerator)
         {
             $this->filenameGenerator = $filenameGenerator;
         }
 
         /**
-         * @return FilenameGenerator
+         * @return FilenameGeneratorInterface
          */
         public function getFilenameGenerator()
         {

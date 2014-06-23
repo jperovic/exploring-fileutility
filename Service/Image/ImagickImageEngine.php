@@ -23,13 +23,13 @@
         }
 
         /**
-         * @param string $directory
+         * @param string $directoryAlias
          * @param string $filename
          * @param string $mask_path
          *
          * @return string
          */
-        public function clipImage($filename, $directory, $mask_path)
+        public function clipImage($filename, $directoryAlias, $mask_path)
         {
             // Create new objects from png's
             $source = new Imagick($filename);
@@ -49,24 +49,24 @@
 
             // Write image to a file.
             $source->writeImage($destination);
-            $this->fileManager->save($destination, $directory);
+            $this->fileManager->save($destination, $directoryAlias);
 
             $source->destroy();
             $mask->destroy();
 
-            return $this->fileManager->stripAbsolutePath($destination, $directory);
+            return $this->fileManager->stripAbsolutePath($destination, $directoryAlias);
         }
 
         /**
          * @param string $filename
-         * @param string $directory
+         * @param string $directoryAlias
          * @param int    $width
          * @param int    $height
          * @param bool   $enlarge
          *
          * @return string
          */
-        public function scaleImage($filename, $directory, $width, $height = 0, $enlarge = true)
+        public function scaleImage($filename, $directoryAlias, $width, $height = 0, $enlarge = true)
         {
             $source = new Imagick($filename);
             $source->scaleimage($width, $height);
@@ -74,11 +74,11 @@
             $destination = $this->fileNameGenerator->createScaled($filename, $width, $height);
 
             $source->writeimage($destination);
-            $this->fileManager->save($destination, $directory);
+            $this->fileManager->save($destination, $directoryAlias);
 
             $source->destroy();
 
-            return $this->fileManager->stripAbsolutePath($destination, $directory);
+            return $this->fileManager->stripAbsolutePath($destination, $directoryAlias);
         }
 
         /**

@@ -26,10 +26,14 @@
 
         public function testUpload()
         {
-            $photo = new UploadedFile(__DIR__ . '/Resources/tomask.png', 'tomask.png', 'image/png', filesize(__DIR__ . '/Resources/tomask.png'), null, true);
+            $photo = new UploadedFile(__DIR__ . '/Resources/tomask.png', 'tomask.png', 'image/png', filesize(
+                __DIR__ . '/Resources/tomask.png'
+            ), null, true);
             $newFileName = $this->manager->getFilenameGenerator()->generateRandom($photo);
             copy(__DIR__ . '/Resources/tomask.png', __DIR__ . '/Resources/' . $newFileName);
-            $photo = new UploadedFile(__DIR__ . '/Resources/' . $newFileName, $newFileName, 'image/png', filesize(__DIR__ . '/Resources/' . $newFileName), null, true);
+            $photo = new UploadedFile(__DIR__ . '/Resources/' . $newFileName, $newFileName, 'image/png', filesize(
+                __DIR__ . '/Resources/' . $newFileName
+            ), null, true);
 
             $newFileName = $this->manager->beginTransaction()->save($photo, 'news');
 
@@ -44,7 +48,9 @@
 
         public function testReferenceFile()
         {
-            $photo = new UploadedFile(__DIR__ . '/Resources/tomask.png', 'tomask.png', 'image/png', filesize(__DIR__ . '/Resources/tomask.png'), null, true);
+            $photo = new UploadedFile(__DIR__ . '/Resources/tomask.png', 'tomask.png', 'image/png', filesize(
+                __DIR__ . '/Resources/tomask.png'
+            ), null, true);
             $newFileName = $this->manager->getFilenameGenerator()->generateRandom($photo);
             $newFullPath = $this->manager->getUploadPath('news') . $newFileName;
             copy(__DIR__ . '/Resources/tomask.png', $newFullPath);

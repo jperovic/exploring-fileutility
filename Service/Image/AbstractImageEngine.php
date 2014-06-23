@@ -3,7 +3,7 @@
 
     use Exploring\FileUtilityBundle\Service\File\FileManager;
     use Exploring\FileUtilityBundle\Utility\NameGenerator\DefaultFilenameGenerator;
-    use Exploring\FileUtilityBundle\Utility\NameGenerator\FilenameGenerator;
+    use Exploring\FileUtilityBundle\Utility\NameGenerator\FilenameGeneratorInterface;
 
     /**
      * Created by JetBrains PhpStorm.
@@ -20,11 +20,11 @@
         protected $fileManager;
 
         /**
-         * @var FilenameGenerator
+         * @var FilenameGeneratorInterface
          */
         protected $fileNameGenerator;
 
-        public function __construct($fileManager)
+        public function __construct(FileManager $fileManager)
         {
             $this->fileManager = $fileManager;
 
@@ -32,33 +32,32 @@
         }
 
         /**
-         * @param string $directory
+         * @param string $directoryAlias
          * @param string $filename
          * @param string $mask_path
          *
          * @return string
          */
-        public abstract function clipImage($filename, $directory, $mask_path);
+        public abstract function clipImage($filename, $directoryAlias, $mask_path);
 
         /**
          * @param string $filename
-         * @param string $directory
+         * @param string $directoryAlias
          * @param int    $size
          * @param bool   $enlarge
          *
          * @return string
          */
-        public function scaleLargeEdge($filename, $directory, $size, $enlarge = true)
+        public function scaleLargeEdge($filename, $directoryAlias, $size, $enlarge = true)
         {
             $dim = $this->getImageSize($filename);
 
             $landscape = $dim['width'] > $dim['height'];
 
             if ($landscape) {
-                return $this->scaleImage($filename, $directory, $size, 0, $enlarge);
-            }
-            else {
-                return $this->scaleImage($filename, $directory, 0, $size, $enlarge);
+                return $this->scaleImage($filename, $directoryAlias, $size, 0, $enlarge);
+            } else {
+                return $this->scaleImage($filename, $directoryAlias, 0, $size, $enlarge);
             }
         }
 
@@ -71,14 +70,14 @@
 
         /**
          * @param string $filename
-         * @param string $directory
+         * @param string $directoryAlias
          * @param int    $width
          * @param int    $height
          * @param bool   $enlarge
          *
          * @return string
          */
-        public abstract function scaleImage($filename, $directory, $width, $height = 0, $enlarge = true);
+        public abstract function scaleImage($filename, $directoryAlias, $width, $height = 0, $enlarge = true);
 
         /**
          * @return FileManager
@@ -89,7 +88,7 @@
         }
 
         /**
-         * @return FilenameGenerator
+         * @return FilenameGeneratorInterface
          */
         public function getFileNameGenerator()
         {

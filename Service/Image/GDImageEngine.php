@@ -12,15 +12,14 @@
         }
 
         /**
-         * @param string $directory
+         * @param string $directoryAlias
          * @param string $filename
          * @param string $mask_path
          *
          * @throws ImageProcessorException
-         * @internal param string $absFilename
          * @return string
          */
-        public function clipImage($filename, $directory, $mask_path)
+        public function clipImage($filename, $directoryAlias, $mask_path)
         {
             $file = new File($filename);
 
@@ -32,15 +31,16 @@
             $image = null;
             if ($type == IMAGETYPE_JPEG) {
                 $image = @imagecreatefromjpeg($filename);
-            }
-            else if ($type == IMAGETYPE_PNG) {
-                $image = @imagecreatefrompng($filename);
-            }
-            else if ($type == IMAGETYPE_GIF) {
-                $image = @imagecreatefromgif($filename);
-            }
-            else {
-                throw new ImageProcessorException("Unsupported image type!");
+            } else {
+                if ($type == IMAGETYPE_PNG) {
+                    $image = @imagecreatefrompng($filename);
+                } else {
+                    if ($type == IMAGETYPE_GIF) {
+                        $image = @imagecreatefromgif($filename);
+                    } else {
+                        throw new ImageProcessorException("Unsupported image type!");
+                    }
+                }
             }
 
             $mask = @imagecreatefrompng($mask_path);
@@ -75,18 +75,23 @@
                     $alpha = imagecolorsforindex($mask, imagecolorat($mask, $x, $y));
                     $alpha = 127 - floor($alpha['red'] / 2);
                     $color = imagecolorsforindex($image, imagecolorat($image, $x, $y));
-                    imagesetpixel($newPicture, $x, $y, imagecolorallocatealpha($newPicture, $color['red'], $color['green'], $color['blue'], $alpha));
+                    imagesetpixel(
+                        $newPicture,
+                        $x,
+                        $y,
+                        imagecolorallocatealpha($newPicture, $color['red'], $color['green'], $color['blue'], $alpha)
+                    );
                 }
             }
 
             // Copy back to original picture
             imagedestroy($image);
             $newFileName = $this->fileNameGenerator->createMasked($file->getFilename());
-            $destination = $this->fileManager->getAbsolutePath($directory, $newFileName);
+            $destination = $this->fileManager->getAbsolutePath($newFileName, $directoryAlias);
 
             @imagepng($newPicture, $destination, 9);
 
-            $this->fileManager->save($destination, $directory);
+            $this->fileManager->save($destination, $directoryAlias);
 
             return $newFileName;
         }
@@ -105,7 +110,7 @@
 
         /**
          * @param string $filename
-         * @param string $directory
+         * @param string $directoryAlias
          * @param int    $width
          * @param int    $height
          * @param bool   $enlarge
@@ -113,7 +118,7 @@
          * @throws ImageProcessorException
          * @return string
          */
-        public function scaleImage($filename, $directory, $width, $height = 0, $enlarge = true)
+        public function scaleImage($filename, $directoryAlias, $width, $height = 0, $enlarge = true)
         {
             $file = new File($filename, true);
 
@@ -125,15 +130,16 @@
 
             if ($type == IMAGETYPE_JPEG) {
                 $Image = @imagecreatefromjpeg($filename);
-            }
-            else if ($type == IMAGETYPE_PNG) {
-                $Image = @imagecreatefrompng($filename);
-            }
-            else if ($type == IMAGETYPE_GIF) {
-                $Image = @imagecreatefromgif($filename);
-            }
-            else {
-                throw new ImageProcessorException("Invalid image type.");
+            } else {
+                if ($type == IMAGETYPE_PNG) {
+                    $Image = @imagecreatefrompng($filename);
+                } else {
+                    if ($type == IMAGETYPE_GIF) {
+                        $Image = @imagecreatefromgif($filename);
+                    } else {
+                        throw new ImageProcessorException("Invalid image type.");
+                    }
+                }
             }
 
             if (!$Image) {
@@ -148,17 +154,18 @@
                     $height = $h;
                 }
                 $width = $isLandscape ? $height * $ratio : $height / $ratio;
-            }
-            else if ($height == 0) {
-                if ($width > $w && !$enlarge) {
-                    $width = $w;
+            } else {
+                if ($height == 0) {
+                    if ($width > $w && !$enlarge) {
+                        $width = $w;
+                    }
+                    $height = $isLandscape ? $width / $ratio : $width * $ratio;
                 }
-                $height = $isLandscape ? $width / $ratio : $width * $ratio;
             }
 
             $scaledFileName = $this->fileNameGenerator->createScaled($file->getFilename(), $width, $height);
 
-            $destination = $this->fileManager->getAbsolutePath($directory, $scaledFileName);
+            $destination = $this->fileManager->getAbsolutePath($scaledFileName, $directoryAlias);
 
             $NewImage = imagecreatetruecolor($width, $height);
             imagecopyresampled($NewImage, $Image, 0, 0, 0, 0, $width, $height, $w, $h);
@@ -166,16 +173,14 @@
 
             if ($type == IMAGETYPE_JPEG) {
                 imagejpeg($NewImage, $destination, 100);
-            }
-            elseif ($type == IMAGETYPE_PNG) {
+            } elseif ($type == IMAGETYPE_PNG) {
                 imagepng($NewImage, $destination, 9);
-            }
-            elseif ($type == IMAGETYPE_GIF) {
+            } elseif ($type == IMAGETYPE_GIF) {
                 imagegif($NewImage, $destination);
             }
             imagedestroy($NewImage);
 
-            $this->fileManager->save($destination, $directory);
+            $this->fileManager->save($destination, $directoryAlias);
 
             return $scaledFileName;
         }

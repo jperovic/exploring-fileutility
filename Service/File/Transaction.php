@@ -1,7 +1,7 @@
 <?php
     namespace Exploring\FileUtilityBundle\Service\File;
 
-    use Exploring\FileUtilityBundle\Service\File\FileManager;
+    use Exploring\FileUtilityBundle\Data as Data;
     use Symfony\Component\HttpFoundation\File\File;
     use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -27,25 +27,32 @@
 
         /**
          * @param UploadedFile|string $file
-         * @param string              $directory
+         * @param string              $directoryAlias
          * @param bool                $temp
          *
-         * @return string
+         * @return Data\File
          */
-        function save($file, $directory, $temp = false)
+        function save($file, $directoryAlias, $temp = false)
         {
-            $target = $this->manager->getUploadPath($directory);
+            $target = $this->manager->getUploadPath($directoryAlias);
 
-            if (is_string($file)) {
-                $handle = new File($file, true);
-                $newFileName = $handle->getFilename();
-                $newRealPath = $handle->getRealPath();
-            }
-            else {
+            if ($file instanceof UploadedFile) {
                 $newFileName = $this->manager->getFilenameGenerator()->generateRandom($file);
-                $file->move($target, $newFileName);
                 $newRealPath = $target . $newFileName;
+                $file->move($target, $newFileName);
+
+                $handle = new File($newRealPath, true);
+            } else {
+                $handle = new File($file, true);
+                $file = new UploadedFile($handle->getRealPath(), $handle->getFilename());
+                $newFileName = $this->manager->getFilenameGenerator()->generateRandom($file);
+                $newRealPath = $target . DIRECTORY_SEPARATOR . $newFileName;
+                copy($handle->getRealPath(), $newRealPath);
             }
+
+            $mimeType = $handle->getMimeType();
+            $size = $handle->getSize();
+            $extension = $handle->getExtension();
 
             $this->enties[] = new TransactionEntry(TransactionEntry::UPLOAD, $newRealPath);
 
@@ -53,36 +60,36 @@
                 $this->tempFiles[] = $newRealPath;
             }
 
-            return $newFileName;
+            return new Data\File($newFileName, $extension, $directoryAlias, $mimeType, $size);
         }
 
         /**
          * @param string $filename
-         * @param string $directory
+         * @param string $directoryAlias
          *
          * @throws FileManagerException
          * @internal param string $queue
          *
          * @return bool
          */
-        function remove($filename, $directory)
+        function remove($filename, $directoryAlias)
         {
-            if ($filename !== NULL) {
-                $target = $this->manager->getUploadPath($directory);
-                $absPath = realpath($target . $filename);
+            if ($filename !== null) {
+                $target = $this->manager->getUploadPath($directoryAlias);
+                $absolutePath = realpath($target . $filename);
 
-                if ($absPath === FALSE) {
+                if ($absolutePath === false) {
                     throw new FileManagerException(sprintf("File \"%s\" does not exist.", $filename));
                 }
 
-                $entryData = array($absPath, $target . md5($filename . time()));
-                rename($absPath, $entryData[1]);
+                $entryData = array($absolutePath, $target . md5($filename . time()));
+                rename($absolutePath, $entryData[1]);
                 $this->enties[] = new TransactionEntry(TransactionEntry::REMOVE, $entryData);
 
-                return TRUE;
+                return true;
             }
 
-            return FALSE;
+            return false;
         }
 
         function commit()
@@ -108,8 +115,7 @@
 
                 if ($e->getAction() == TransactionEntry::UPLOAD) {
                     @unlink($data);
-                }
-                else {
+                } else {
                     rename($data[1], $data[0]);
                 }
             }

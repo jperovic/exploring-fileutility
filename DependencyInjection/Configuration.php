@@ -18,14 +18,15 @@
         public function getConfigTreeBuilder()
         {
             $treeBuilder = new TreeBuilder();
-            $rootNode = $treeBuilder->root('exploring_file_utilily');
+            $rootNode = $treeBuilder->root('exploring_file_utility');
 
             $rootNode
                 ->children()
                 ->arrayNode('directories')->useAttributeAsKey('name')->requiresAtLeastOneElement()->prototype('scalar')
                 ->end()->end()
                 ->scalarNode('upload_root')->defaultValue('/tmp')->end()
-                ->enumNode('image_engine')->values(array('gd', 'imagick'))->defaultValue('gd')->end()->end();
+                ->scalarNode('filename_generator')->defaultValue(null)->end()
+                ->scalarNode('image_engine')->defaultValue('gd')->end();
 
             return $treeBuilder;
         }

@@ -3,8 +3,7 @@
 
 
     use Exploring\FileUtilityBundle\Service\File\FileManager;
-    use Exploring\FileUtilityBundle\Utility\NameGenerator\FilenameGenerator;
-    use Symfony\Component\Debug\Exception\ClassNotFoundException;
+    use Exploring\FileUtilityBundle\Utility\NameGenerator\FilenameGeneratorInterface;
 
     class ImageProcessor
     {
@@ -18,18 +17,6 @@
         function __construct(AbstractImageEngine $engine)
         {
             $this->engine = $engine;
-        }
-
-        public static function get($engineName, FileManager $fileManager)
-        {
-            switch ($engineName) {
-                case self::ENGINE_GD:
-                    return new ImageProcessor(new GDImageEngine($fileManager));
-                case self::ENGINE_IMAGICK:
-                    return new ImageProcessor(new ImagickImageEngine($fileManager));
-                default:
-                    throw new ClassNotFoundException("Unknown image engine name: " . $engineName, null);
-            }
         }
 
         /**
@@ -90,7 +77,7 @@
         }
 
         /**
-         * @return FilenameGenerator
+         * @return FilenameGeneratorInterface
          */
         public function getFileNameGenerator()
         {

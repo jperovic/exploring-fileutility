@@ -45,11 +45,15 @@
          */
         private function getDummyFile($res = 'tomask.png')
         {
-            $photo = new UploadedFile(__DIR__ . '/Resources/' . $res, $res, 'image/png', filesize(__DIR__ . '/Resources/' . $res), null, true);
+            $photo = new UploadedFile(__DIR__ . '/Resources/' . $res, $res, 'image/png', filesize(
+                __DIR__ . '/Resources/' . $res
+            ), null, true);
             $newFileName = $this->gd->getFileManager()->getFilenameGenerator()->generateRandom($photo);
             copy(__DIR__ . '/Resources/' . $res, __DIR__ . '/Resources/' . $newFileName);
 
-            return new UploadedFile(__DIR__ . '/Resources/' . $newFileName, $newFileName, 'image/png', filesize(__DIR__ . '/Resources/' . $newFileName), null, true);
+            return new UploadedFile(__DIR__ . '/Resources/' . $newFileName, $newFileName, 'image/png', filesize(
+                __DIR__ . '/Resources/' . $newFileName
+            ), null, true);
         }
 
         public function testGdScaleLarge()

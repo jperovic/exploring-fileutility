@@ -3,14 +3,12 @@
 
     use Symfony\Component\HttpFoundation\File\UploadedFile;
 
-    class DefaultFilenameGenerator
+    class DefaultFilenameGenerator implements FilenameGeneratorInterface
     {
-        private $maskSufix = "masked";
+        private $maskSuffix = "masked";
 
         /**
-         * @param UploadedFile $file
-         *
-         * @return string
+         * {@inheritdoc}
          */
         public function generateRandom(UploadedFile $file)
         {
@@ -20,37 +18,38 @@
         }
 
         /**
-         * @param string $filename
-         *
-         * @return string
+         * {@inheritdoc}
          */
         public function createMasked($filename)
         {
             $dotIndex = strrpos($filename, '.');
 
-            if ($dotIndex !== FALSE) {
-                return substr($filename, 0, $dotIndex) . '_' . $this->maskSufix . '.' . substr($filename, $dotIndex + 1);
-            }
-            else {
-                return $filename . '_' . $this->maskSufix;
+            if ($dotIndex !== false) {
+                return substr($filename, 0, $dotIndex) . '_' . $this->maskSuffix . '.' . substr(
+                    $filename,
+                    $dotIndex + 1
+                );
+            } else {
+                return $filename . '_' . $this->maskSuffix;
             }
         }
 
         /**
-         * @param string $filename
-         * @param int    $width
-         * @param int    $height
-         *
-         * @return string
+         * {@inheritdoc}
          */
         public function createScaled($filename, $width, $height)
         {
             $dotIndex = strrpos($filename, '.');
 
-            if ($dotIndex !== FALSE) {
-                return sprintf("%s_%dx%d.%s", substr($filename, 0, $dotIndex), $width, $height, substr($filename, $dotIndex + 1));
-            }
-            else {
+            if ($dotIndex !== false) {
+                return sprintf(
+                    "%s_%dx%d.%s",
+                    substr($filename, 0, $dotIndex),
+                    $width,
+                    $height,
+                    substr($filename, $dotIndex + 1)
+                );
+            } else {
                 return sprintf("%s_%dx%d", $filename, $width, $height);
             }
         }
