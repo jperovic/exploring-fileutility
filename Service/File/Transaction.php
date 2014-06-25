@@ -1,7 +1,7 @@
 <?php
     namespace Exploring\FileUtilityBundle\Service\File;
 
-    use Exploring\FileUtilityBundle\Data as Data;
+    use Exploring\FileUtilityBundle\Data\FileWrapper;
     use Symfony\Component\HttpFoundation\File\File;
     use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -26,33 +26,32 @@
         }
 
         /**
-         * @param UploadedFile|string $file
-         * @param string              $directoryAlias
-         * @param bool                $temp
+         * @param File   $file
+         * @param string $saveToAlias
+         * @param bool   $temp
          *
-         * @return Data\File
+         * @return FileWrapper
          */
-        function save($file, $directoryAlias, $temp = false)
+        function save(File $file, $saveToAlias, $temp = false)
         {
-            $target = $this->manager->getUploadPath($directoryAlias);
+            $target = $this->manager->resolveDirectoryAlias($saveToAlias);
 
-            if ($file instanceof UploadedFile) {
-                $newFileName = $this->manager->getFilenameGenerator()->generateRandom($file);
-                $newRealPath = $target . $newFileName;
-                $file->move($target, $newFileName);
+            $realPath = $file->getRealPath();
 
-                $handle = new File($newRealPath, true);
+            if (strpos($realPath, $target) === 0) {
+                $newRealPath = $realPath;
             } else {
-                $handle = new File($file, true);
-                $file = new UploadedFile($handle->getRealPath(), $handle->getFilename());
-                $newFileName = $this->manager->getFilenameGenerator()->generateRandom($file);
-                $newRealPath = $target . DIRECTORY_SEPARATOR . $newFileName;
-                copy($handle->getRealPath(), $newRealPath);
+                $newFileName = $this->manager->getFilenameGenerator()->generateRandom($file, $temp);
+                $newRealPath = $target . $newFileName;
+                if ($temp && $file instanceof UploadedFile) {
+                    copy($file->getRealPath(), $newRealPath);
+                } else {
+                    $file->move($target, $newFileName);
+                }
             }
 
-            $mimeType = $handle->getMimeType();
-            $size = $handle->getSize();
-            $extension = $handle->getExtension();
+            // create the reference to new file
+            $file = new FileWrapper($newRealPath, $saveToAlias);
 
             $this->enties[] = new TransactionEntry(TransactionEntry::UPLOAD, $newRealPath);
 
@@ -60,7 +59,7 @@
                 $this->tempFiles[] = $newRealPath;
             }
 
-            return new Data\File($newFileName, $extension, $directoryAlias, $mimeType, $size);
+            return $file;
         }
 
         /**
@@ -75,7 +74,7 @@
         function remove($filename, $directoryAlias)
         {
             if ($filename !== null) {
-                $target = $this->manager->getUploadPath($directoryAlias);
+                $target = $this->manager->resolveDirectoryAlias($directoryAlias);
                 $absolutePath = realpath($target . $filename);
 
                 if ($absolutePath === false) {

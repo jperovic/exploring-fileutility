@@ -1,20 +1,21 @@
 <?php
     namespace Exploring\FileUtilityBundle\Utility\NameGenerator;
 
-    use Symfony\Component\HttpFoundation\File\UploadedFile;
+    use Symfony\Component\HttpFoundation\File\File;
 
     class DefaultFilenameGenerator implements FilenameGeneratorInterface
     {
-        private $maskSuffix = "masked";
+        const MASK_SUFFIX = "masked";
+        const TEMP_PREFIX = "_t_";
 
         /**
          * {@inheritdoc}
          */
-        public function generateRandom(UploadedFile $file)
+        public function generateRandom(File $file, $temp = false)
         {
             $ext = $file->guessExtension();
 
-            return md5($file->getClientOriginalName() . time() . rand(1, 9999)) . '.' . $ext;
+            return ($temp ? self::TEMP_PREFIX : "") . md5($file->getFilename() . time() . rand(1, 9999)) . '.' . $ext;
         }
 
         /**
@@ -22,15 +23,17 @@
          */
         public function createMasked($filename)
         {
+            $filename = $this->stripTempPrefix($filename);
+
             $dotIndex = strrpos($filename, '.');
 
             if ($dotIndex !== false) {
-                return substr($filename, 0, $dotIndex) . '_' . $this->maskSuffix . '.' . substr(
+                return substr($filename, 0, $dotIndex) . '_' . self::MASK_SUFFIX . '.' . substr(
                     $filename,
                     $dotIndex + 1
                 );
             } else {
-                return $filename . '_' . $this->maskSuffix;
+                return $filename . '_' . self::MASK_SUFFIX;
             }
         }
 
@@ -39,6 +42,8 @@
          */
         public function createScaled($filename, $width, $height)
         {
+            $filename = $this->stripTempPrefix($filename);
+
             $dotIndex = strrpos($filename, '.');
 
             if ($dotIndex !== false) {
@@ -52,5 +57,13 @@
             } else {
                 return sprintf("%s_%dx%d", $filename, $width, $height);
             }
+        }
+
+        private function stripTempPrefix($filename)
+        {
+            return strpos($filename, self::TEMP_PREFIX) === 0 ? $filename = substr(
+                $filename,
+                strlen(self::TEMP_PREFIX)
+            ) : $filename;
         }
     }

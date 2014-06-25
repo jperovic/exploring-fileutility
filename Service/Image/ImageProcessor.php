@@ -1,9 +1,9 @@
 <?php
     namespace Exploring\FileUtilityBundle\Service\Image;
 
-
+    use Exploring\FileUtilityBundle\Data\FileWrapper;
     use Exploring\FileUtilityBundle\Service\File\FileManager;
-    use Exploring\FileUtilityBundle\Utility\NameGenerator\FilenameGeneratorInterface;
+    use Symfony\Component\HttpFoundation\File\File;
 
     class ImageProcessor
     {
@@ -20,28 +20,28 @@
         }
 
         /**
-         * @param string $directory
-         * @param string $filename
-         * @param string $mask_path
+         * @param File   $file
+         * @param string $saveToAlias
+         * @param File   $maskFile
          *
-         * @return string
+         * @return FileWrapper
          */
-        public function clipImage($filename, $directory, $mask_path)
+        public function clipImage(File $file, $saveToAlias, File $maskFile)
         {
-            return $this->engine->clipImage($filename, $directory, $mask_path);
+            return $this->engine->clipImage($file, $saveToAlias, $maskFile);
         }
 
         /**
-         * @param string $filename
-         * @param string $directory
+         * @param File   $file
+         * @param string $saveToAlias
          * @param int    $size
          * @param bool   $enlarge
          *
-         * @return string
+         * @return FileWrapper
          */
-        public function scaleLargeEdge($filename, $directory, $size, $enlarge = true)
+        public function scaleLargeEdge(File $file, $saveToAlias, $size, $enlarge = true)
         {
-            return $this->engine->scaleLargeEdge($filename, $directory, $size, $enlarge);
+            return $this->engine->scaleLargeEdge($file, $saveToAlias, $size, $enlarge);
         }
 
         /**
@@ -55,17 +55,17 @@
         }
 
         /**
-         * @param string $filename
-         * @param string $directory
+         * @param File   $file
+         * @param string $saveToAlias
          * @param int    $width
          * @param int    $height
          * @param bool   $enlarge
          *
-         * @return string
+         * @return FileWrapper
          */
-        public function scaleImage($filename, $directory, $width, $height = 0, $enlarge = true)
+        public function scaleImage(File $file, $saveToAlias, $width, $height = 0, $enlarge = true)
         {
-            return $this->engine->scaleImage($filename, $directory, $width, $height, $enlarge);
+            return $this->engine->scaleImage($file, $saveToAlias, $width, $height, $enlarge);
         }
 
         /**
@@ -77,19 +77,13 @@
         }
 
         /**
-         * @return FilenameGeneratorInterface
-         */
-        public function getFileNameGenerator()
-        {
-            return $this->engine->getFileNameGenerator();
-        }
-
-        /**
          * @return $this
          */
         public function commit()
         {
-            return $this->engine->commit();
+            $this->getFileManager()->commit();
+
+            return $this;
         }
 
         /**
@@ -99,6 +93,8 @@
          */
         public function rollback($onlyLastTransation = false)
         {
-            return $this->engine->rollback($onlyLastTransation);
+            $this->getFileManager()->rollback($onlyLastTransation);
+
+            return $this;
         }
     }

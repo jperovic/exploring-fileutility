@@ -52,7 +52,7 @@
                 __DIR__ . '/Resources/tomask.png'
             ), null, true);
             $newFileName = $this->manager->getFilenameGenerator()->generateRandom($photo);
-            $newFullPath = $this->manager->getUploadPath('news') . $newFileName;
+            $newFullPath = $this->manager->resolveDirectoryAlias('news') . $newFileName;
             copy(__DIR__ . '/Resources/tomask.png', $newFullPath);
 
             $M = $this->manager->beginTransaction();

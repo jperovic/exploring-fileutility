@@ -1,9 +1,9 @@
 <?php
     namespace Exploring\FileUtilityBundle\Service\Image;
 
+    use Exploring\FileUtilityBundle\Data\FileWrapper;
     use Exploring\FileUtilityBundle\Service\File\FileManager;
-    use Exploring\FileUtilityBundle\Utility\NameGenerator\DefaultFilenameGenerator;
-    use Exploring\FileUtilityBundle\Utility\NameGenerator\FilenameGeneratorInterface;
+    use Symfony\Component\HttpFoundation\File\File;
 
     /**
      * Created by JetBrains PhpStorm.
@@ -19,26 +19,19 @@
          */
         protected $fileManager;
 
-        /**
-         * @var FilenameGeneratorInterface
-         */
-        protected $fileNameGenerator;
-
         public function __construct(FileManager $fileManager)
         {
             $this->fileManager = $fileManager;
-
-            $this->fileNameGenerator = new DefaultFilenameGenerator();
         }
 
         /**
-         * @param string $directoryAlias
-         * @param string $filename
-         * @param string $mask_path
+         * @param File   $file
+         * @param string $saveToAlias
+         * @param File   $maskFile
          *
-         * @return string
+         * @return FileWrapper
          */
-        public abstract function clipImage($filename, $directoryAlias, $mask_path);
+        public abstract function clipImage(File $file, $saveToAlias, File $maskFile);
 
         /**
          * @param string $filename
@@ -50,7 +43,7 @@
          */
         public function scaleLargeEdge($filename, $directoryAlias, $size, $enlarge = true)
         {
-            $dim = $this->getImageSize($filename);
+            $dim = $this->getImageSize($this->fileManager->getAbsolutePath($filename, $directoryAlias));
 
             $landscape = $dim['width'] > $dim['height'];
 
@@ -69,15 +62,15 @@
         public abstract function getImageSize($filename);
 
         /**
-         * @param string $filename
-         * @param string $directoryAlias
+         * @param File   $file
+         * @param string $saveToAlias
          * @param int    $width
          * @param int    $height
          * @param bool   $enlarge
          *
-         * @return string
+         * @return FileWrapper
          */
-        public abstract function scaleImage($filename, $directoryAlias, $width, $height = 0, $enlarge = true);
+        public abstract function scaleImage(File $file, $saveToAlias, $width, $height = 0, $enlarge = true);
 
         /**
          * @return FileManager
@@ -85,14 +78,6 @@
         public function getFileManager()
         {
             return $this->fileManager;
-        }
-
-        /**
-         * @return FilenameGeneratorInterface
-         */
-        public function getFileNameGenerator()
-        {
-            return $this->fileNameGenerator;
         }
 
         /**

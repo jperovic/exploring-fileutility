@@ -1,8 +1,11 @@
 <?php
     namespace Exploring\FileUtilityBundle\Service\Image;
 
+    use Exploring\FileUtilityBundle\Data\FileWrapper;
     use Exploring\FileUtilityBundle\Service\File\FileManager;
     use Imagick;
+    use Symfony\Component\HttpFoundation\File\File;
+    use Symfony\Component\HttpFoundation\File\UploadedFile;
 
     /**
      * Created by JetBrains PhpStorm.
@@ -23,19 +26,24 @@
         }
 
         /**
-         * @param string $directoryAlias
-         * @param string $filename
-         * @param string $mask_path
+         * @param File   $file
+         * @param string $saveToAlias
+         * @param File   $maskFile
          *
-         * @return string
+         * @return FileWrapper
          */
-        public function clipImage($filename, $directoryAlias, $mask_path)
+        public function clipImage(File $file, $saveToAlias, File $maskFile)
         {
+            if ($file instanceof UploadedFile) {
+                $entry = $this->fileManager->save($file, $saveToAlias, true);
+                $file = $entry->getFile();
+            }
+
             // Create new objects from png's
-            $source = new Imagick($filename);
+            $source = new Imagick($file->getRealPath());
             $source->setimagecompression(Imagick::COMPRESSION_NO);
             $source->setimagecompressionquality(1);
-            $mask = new Imagick($mask_path);
+            $mask = new Imagick($maskFile->getRealPath());
             $maskSize = $mask->getimagegeometry();
 
             // IMPORTANT! Must activate the opacity channel
@@ -45,40 +53,48 @@
             $source->compositeImage($mask, Imagick::COMPOSITE_DSTIN, 0, 0);
             $source->cropimage($maskSize['width'], $maskSize['height'], 0, 0);
 
-            $destination = $this->fileNameGenerator->createMasked($filename);
+            $newFileName = $this->fileManager->getFilenameGenerator()->createMasked($file->getFilename());
+            $destination = $this->fileManager->getAbsolutePath($newFileName, $saveToAlias);
 
             // Write image to a file.
             $source->writeImage($destination);
-            $this->fileManager->save($destination, $directoryAlias);
 
             $source->destroy();
             $mask->destroy();
 
-            return $this->fileManager->stripAbsolutePath($destination, $directoryAlias);
+            return $this->fileManager->save(new File($destination), $saveToAlias);
         }
 
         /**
-         * @param string $filename
-         * @param string $directoryAlias
+         * @param File   $file
+         * @param string $saveToAlias
          * @param int    $width
          * @param int    $height
          * @param bool   $enlarge
          *
-         * @return string
+         * @return FileWrapper
          */
-        public function scaleImage($filename, $directoryAlias, $width, $height = 0, $enlarge = true)
+        public function scaleImage(File $file, $saveToAlias, $width, $height = 0, $enlarge = true)
         {
-            $source = new Imagick($filename);
+            if ($file instanceof UploadedFile) {
+                $entry = $this->fileManager->save($file, $saveToAlias, true);
+                $file = $entry->getFile();
+            }
+
+            $source = new Imagick($file);
             $source->scaleimage($width, $height);
 
-            $destination = $this->fileNameGenerator->createScaled($filename, $width, $height);
+            $newFileName = $this->fileManager->getFilenameGenerator()->createScaled(
+                                             $file->getFilename(),
+                                                 $width,
+                                                 $height
+            );
+            $destination = $this->fileManager->getAbsolutePath($newFileName, $saveToAlias);
 
             $source->writeimage($destination);
-            $this->fileManager->save($destination, $directoryAlias);
-
             $source->destroy();
 
-            return $this->fileManager->stripAbsolutePath($destination, $directoryAlias);
+            return $this->fileManager->save(new File($destination), $saveToAlias);
         }
 
         /**
@@ -93,13 +109,5 @@
             $source->destroy();
 
             return $size;
-        }
-
-        /**
-         * @return string
-         */
-        public function getName()
-        {
-            return "ImagickImageProcessor";
         }
     }

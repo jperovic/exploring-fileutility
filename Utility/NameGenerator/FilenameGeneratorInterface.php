@@ -1,7 +1,7 @@
 <?php
     namespace Exploring\FileUtilityBundle\Utility\NameGenerator;
 
-    use Symfony\Component\HttpFoundation\File\UploadedFile;
+    use Symfony\Component\HttpFoundation\File\File;
 
     interface FilenameGeneratorInterface
     {
@@ -23,9 +23,9 @@
         function createScaled($filename, $width, $height);
 
         /**
-         * @param UploadedFile $file
+         * @param File $file
          *
          * @return string
          */
-        function generateRandom(UploadedFile $file);
+        function generateRandom(File $file);
     }

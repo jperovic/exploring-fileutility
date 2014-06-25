@@ -1,12 +1,11 @@
 <?php
     namespace Exploring\FileUtilityBundle\Service\File;
 
-    use Exploring\FileUtilityBundle\Data as Data;
+    use Exploring\FileUtilityBundle\Data\FileWrapper;
     use Exploring\FileUtilityBundle\Utility\NameGenerator\DefaultFilenameGenerator;
     use Exploring\FileUtilityBundle\Utility\NameGenerator\FilenameGeneratorInterface;
     use InvalidArgumentException;
     use Symfony\Component\HttpFoundation\File\File;
-    use Symfony\Component\HttpFoundation\File\UploadedFile;
 
     /**
      * Created by JetBrains PhpStorm.
@@ -79,7 +78,7 @@
         public function rollback($onlyLatestTransaction = false)
         {
             if (!$this->hasActiveTransaction()) {
-                throw new FileManagerException("No active transaction.");
+                return $this;
             }
 
             do {
@@ -104,30 +103,15 @@
         }
 
         /**
-         * @param UploadedFile|string $file
-         * @param string              $directoryAlias
-         * @param bool                $temp
+         * @param File   $file
+         * @param string $saveToAlias
+         * @param bool   $temp
          *
-         * @return Data\File
+         * @return FileWrapper
          */
-        public function save($file, $directoryAlias, $temp = false)
+        public function save(File $file, $saveToAlias, $temp = false)
         {
-            return $this->getTransaction()->save($file, $directoryAlias, $temp);
-        }
-
-        /**
-         * @throws FileManagerException
-         * @return Transaction
-         */
-        private function getTransaction()
-        {
-            if (!$this->hasActiveTransaction()) {
-                $this->beginTransaction();
-            }
-
-            $lastIndex = count($this->transactions) - 1;
-
-            return $this->transactions[$lastIndex];
+            return $this->getTransaction()->save($file, $saveToAlias, $temp);
         }
 
         /**
@@ -149,19 +133,37 @@
          */
         public function getAbsolutePath($filename, $directoryAlias, $check = false)
         {
-            $handle = new File($this->getUploadPath($directoryAlias) . $filename, $check);
+            $handle = new File($this->resolveDirectoryAlias($directoryAlias) . $filename, $check);
 
             return $handle->getPath() . DIRECTORY_SEPARATOR . $handle->getFilename();
         }
 
-        /**
-         * @param Data\File $file
-         *
-         * @return string
-         */
-        public function getAbsolutePathOfFile(Data\File $file)
+//        /**
+//         * @param Entry $file
+//         *
+//         * @return string
+//         */
+//        public function getAbsolutePathOfFile(Entry $file)
+//        {
+//            return $this->getAbsolutePath($file->get(), $file->getDirectoryAlias());
+//        }
+
+        public function guessDirectoryAliasOfFile(File $file)
         {
-            return $this->getAbsolutePath($file->getName(), $file->getDirectoryAlias());
+            $real = $file->getRealPath();
+            $aliasNames = array_keys($this->directoryAliases);
+            foreach ($aliasNames as $k) {
+                $stripped = $this->stripAbsolutePath($real, $k);
+
+                if ($stripped !== null) {
+                    return $k;
+                }
+            }
+
+            throw new InvalidArgumentException(sprintf(
+                "Given file \"%s\" does not belong to any configured directory alias.",
+                $real
+            ));
         }
 
         /**
@@ -170,7 +172,7 @@
          * @throws FileManagerException
          * @return null|string
          */
-        public function getUploadPath($alias)
+        public function resolveDirectoryAlias($alias)
         {
             if (!array_key_exists($alias, $this->directoryAliases)) {
                 $availableAliases = implode(
@@ -210,13 +212,23 @@
             return $realPath . DIRECTORY_SEPARATOR;
         }
 
+        /**
+         * @param $path
+         * @param $directoryAlias
+         *
+         * @return null|string
+         * T
+         *
+         * TODO: Sta sa ovom f-om?
+         *
+         */
         public function stripAbsolutePath($path, $directoryAlias)
         {
             if ($directoryAlias == null) {
                 return $path;
             }
 
-            $dirpath = $this->getUploadPath($directoryAlias);
+            $dirpath = $this->resolveDirectoryAlias($directoryAlias);
             if (strpos($path, $dirpath) === 0) {
                 return substr($path, strlen($dirpath));
             }
@@ -238,13 +250,13 @@
         }
 
         /**
-         * @param Data\File $file
+         * @param FileWrapper $file
          *
          * @return $this
          */
-        public function removeFile(Data\File $file)
+        public function removeFile(FileWrapper $file)
         {
-            return $this->remove($file->getName(), $file->getDirectoryAlias());
+            return $this->remove($file->getFile()->getFilename(), $file->getDirectoryAlias());
         }
 
         /**
@@ -281,5 +293,20 @@
         public function getFilenameGenerator()
         {
             return $this->filenameGenerator;
+        }
+
+        /**
+         * @throws FileManagerException
+         * @return Transaction
+         */
+        private function getTransaction()
+        {
+            if (!$this->hasActiveTransaction()) {
+                $this->beginTransaction();
+            }
+
+            $lastIndex = count($this->transactions) - 1;
+
+            return $this->transactions[$lastIndex];
         }
     }

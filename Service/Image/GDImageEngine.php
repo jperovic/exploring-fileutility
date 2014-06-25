@@ -1,8 +1,10 @@
 <?php
     namespace Exploring\FileUtilityBundle\Service\Image;
 
+    use Exploring\FileUtilityBundle\Data\FileWrapper;
     use Exploring\FileUtilityBundle\Service\File\FileManager;
     use Symfony\Component\HttpFoundation\File\File;
+    use Symfony\Component\HttpFoundation\File\UploadedFile;
 
     class GDImageEngine extends AbstractImageEngine
     {
@@ -12,38 +14,43 @@
         }
 
         /**
-         * @param string $directoryAlias
-         * @param string $filename
-         * @param string $mask_path
+         * @param File   $file
+         * @param string $saveToAlias
+         * @param File   $maskFile
          *
          * @throws ImageProcessorException
-         * @return string
+         * @return FileWrapper
          */
-        public function clipImage($filename, $directoryAlias, $mask_path)
+        public function clipImage(File $file, $saveToAlias, File $maskFile)
         {
-            $file = new File($filename);
+            if ($file instanceof UploadedFile) {
+                $entry = $this->fileManager->save($file, $saveToAlias, true);
+                $file = $entry->getFile();
+            }
+
+            $realPath = $file->getRealPath();
 
             /** @noinspection PhpUnusedLocalVariableInspection */
-            if (!list($w, $h, $type) = @getimagesize($filename)) {
+            if (!list($w, $h, $type) = @getimagesize($realPath)) {
                 throw new ImageProcessorException("Invalid source file.");
             }
 
             $image = null;
             if ($type == IMAGETYPE_JPEG) {
-                $image = @imagecreatefromjpeg($filename);
+                $image = @imagecreatefromjpeg($realPath);
             } else {
                 if ($type == IMAGETYPE_PNG) {
-                    $image = @imagecreatefrompng($filename);
+                    $image = @imagecreatefrompng($realPath);
                 } else {
                     if ($type == IMAGETYPE_GIF) {
-                        $image = @imagecreatefromgif($filename);
+                        $image = @imagecreatefromgif($realPath);
                     } else {
                         throw new ImageProcessorException("Unsupported image type!");
                     }
                 }
             }
 
-            $mask = @imagecreatefrompng($mask_path);
+            $mask = @imagecreatefrompng($maskFile->getRealPath());
 
             if (!$image) {
                 throw new ImageProcessorException("Could not create source object");
@@ -86,56 +93,48 @@
 
             // Copy back to original picture
             imagedestroy($image);
-            $newFileName = $this->fileNameGenerator->createMasked($file->getFilename());
-            $destination = $this->fileManager->getAbsolutePath($newFileName, $directoryAlias);
+            $newFileName = $this->fileManager->getFilenameGenerator()->createMasked($file->getFilename());
+            $destination = $this->fileManager->getAbsolutePath($newFileName, $saveToAlias);
 
             @imagepng($newPicture, $destination, 9);
 
-            $this->fileManager->save($destination, $directoryAlias);
-
-            return $newFileName;
+            return $this->fileManager->save(new File($destination), $saveToAlias);
         }
 
         /**
-         * @param string $filename
-         *
-         * @return int[]
-         */
-        public function getImageSize($filename)
-        {
-            list($w, $h) = getimagesize($filename);
-
-            return array('width' => $w, 'height' => $h);
-        }
-
-        /**
-         * @param string $filename
-         * @param string $directoryAlias
+         * @param File   $file
+         * @param string $saveToAlias
          * @param int    $width
          * @param int    $height
          * @param bool   $enlarge
          *
          * @throws ImageProcessorException
-         * @return string
+         *
+         * @return FileWrapper
          */
-        public function scaleImage($filename, $directoryAlias, $width, $height = 0, $enlarge = true)
+        public function scaleImage(File $file, $saveToAlias, $width, $height = 0, $enlarge = true)
         {
-            $file = new File($filename, true);
+            if ($file instanceof UploadedFile) {
+                $entry = $this->fileManager->save($file, $saveToAlias, true);
+                $file = $entry->getFile();
+            }
 
-            list($w, $h, $type) = getimagesize($filename);
+            $realPath = $file->getRealPath();
+
+            list($w, $h, $type) = getimagesize($realPath);
 
             if (!$w || !$h) {
                 throw new ImageProcessorException(sprintf("Invalid image dimensions. Got %d x %d", $w, $h));
             }
 
             if ($type == IMAGETYPE_JPEG) {
-                $Image = @imagecreatefromjpeg($filename);
+                $Image = @imagecreatefromjpeg($realPath);
             } else {
                 if ($type == IMAGETYPE_PNG) {
-                    $Image = @imagecreatefrompng($filename);
+                    $Image = @imagecreatefrompng($realPath);
                 } else {
                     if ($type == IMAGETYPE_GIF) {
-                        $Image = @imagecreatefromgif($filename);
+                        $Image = @imagecreatefromgif($realPath);
                     } else {
                         throw new ImageProcessorException("Invalid image type.");
                     }
@@ -163,9 +162,12 @@
                 }
             }
 
-            $scaledFileName = $this->fileNameGenerator->createScaled($file->getFilename(), $width, $height);
-
-            $destination = $this->fileManager->getAbsolutePath($scaledFileName, $directoryAlias);
+            $scaledFileName = $this->fileManager->getFilenameGenerator()->createScaled(
+                                                $file->getFilename(),
+                                                    $width,
+                                                    $height
+            );
+            $destination = $this->fileManager->getAbsolutePath($scaledFileName, $saveToAlias);
 
             $NewImage = imagecreatetruecolor($width, $height);
             imagecopyresampled($NewImage, $Image, 0, 0, 0, 0, $width, $height, $w, $h);
@@ -180,8 +182,18 @@
             }
             imagedestroy($NewImage);
 
-            $this->fileManager->save($destination, $directoryAlias);
+            return $this->fileManager->save(new File($destination), $saveToAlias);
+        }
 
-            return $scaledFileName;
+        /**
+         * @param string $filename
+         *
+         * @return int[]
+         */
+        public function getImageSize($filename)
+        {
+            list($w, $h) = getimagesize($filename);
+
+            return array('width' => $w, 'height' => $h);
         }
     }
