@@ -24,7 +24,7 @@
                 ->children()
                 ->arrayNode('directories')->useAttributeAsKey('name')->requiresAtLeastOneElement()->prototype('scalar')
                 ->end()->end()
-                ->scalarNode('upload_root')->defaultValue('/tmp')->end()
+                ->scalarNode('upload_root')->isRequired()->end()
                 ->scalarNode('filename_generator')->defaultValue(null)->end()
                 ->scalarNode('image_engine')->defaultValue('gd')->end();
 
