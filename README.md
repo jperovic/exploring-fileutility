@@ -23,10 +23,12 @@ Then run:
 
 And register the bundle within `AppKernel.php`
 
-    $bundles = array(
-        ....
-        new \Exploring\FileUtilityBundle\ExploringFileUtilityBundle(),
-    );
+```php
+$bundles = array(
+    ....
+    new \Exploring\FileUtilityBundle\ExploringFileUtilityBundle(),
+);
+```
 
 You are all set.
 
@@ -35,13 +37,15 @@ Configuration
 
 The bundle uses several configutaion entries.
 
-    exploring_file_utility:
-        directories:
-            alias1: 'relative_name_of_the_directory'
-            alias2: 'another_name_of_the_directory'
-        filename_generator: ~
-        image_engine: ~
-        upload_root: %kernel.root_dir%/../web/uploads
+```YAML
+exploring_file_utility:
+    directories:
+        alias1: 'relative_name_of_the_directory'
+        alias2: 'another_name_of_the_directory'
+    filename_generator: ~
+    image_engine: ~
+    upload_root: %kernel.root_dir%/../web/uploads
+```
 
 The idea behind file management **is not to upload the file to some absolute/relative path but to upload it to the directory alias**.
 Think of an alias as a symbolic link (or shortcut). During the runtime the value of alias is appended to `upload_root` forming the absolute path.
@@ -56,13 +60,15 @@ The bundle comes with some common image operations built-in. The default engine 
 
 The minimalistic configuration would look something like this:
 
-    exploring_file_utility:
-        directories:
-            alias1: 'relative_name_of_the_directory'
-            alias2: 'another_name_of_the_directory'
-            alias3: 'foo_directory'
-            ...
-        upload_root: %kernel.root_dir%/../web/uploads
+```YAML
+exploring_file_utility:
+    directories:
+        alias1: 'relative_name_of_the_directory'
+        alias2: 'another_name_of_the_directory'
+        alias3: 'foo_directory'
+        ...
+    upload_root: %kernel.root_dir%/../web/uploads
+```
 
 Using the file manager
 ---
@@ -77,11 +83,15 @@ $fileManager->save($file, 'alias1');
 
 FileManager's operations are transaction based. That means that all changes to file-system will be reverted unless you `commit`:
 
-    $fileManager->commit();
+```php
+$fileManager->commit();
+```
 
 You can `rollback` changes as well:
 
-    $fileManager->rollback();
+```php
+$fileManager->rollback();
+```
 
 Warning: If no `commit` was ever invoked, all changes will be reverted **automatically**.
 
@@ -218,7 +228,8 @@ $imageProcessor = $this->get('exploring_file_utility.imageprocessor');
 
 $file = ...; // instance of UploadedFile
 
-// if the orientation of the image is landscape it will resize the image using width, otherwise it will use the height
+// if the orientation of the image is landscape it will resize the image using width,
+// otherwise it will use the height
 $thumb = $imageProcessor->scaleLargeEdge($file, 'alias1', 400);
 
 $imageProcessor->commit();
