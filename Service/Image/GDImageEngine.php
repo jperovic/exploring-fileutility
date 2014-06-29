@@ -73,6 +73,9 @@
             // Copy back to original picture
             imagedestroy($image);
             $newFileName = $this->fileManager->getFilenameGenerator()->createMasked($file->getFilename());
+
+            $this->assertGeneratedName($newFileName, 'createMasked');
+
             $destination = $this->fileManager->getAbsolutePath($newFileName, $saveToAlias);
 
             @imagepng($newPicture, $destination, 9);
@@ -130,6 +133,9 @@
                                                     $width,
                                                     $height
             );
+
+            $this->assertGeneratedName($scaledFileName, 'createScaled');
+
             $destination = $this->fileManager->getAbsolutePath($scaledFileName, $saveToAlias);
 
             $newImage = imagecreatetruecolor($width, $height);
@@ -159,6 +165,13 @@
             $image = $this->createImageObject($realPath, $type);
 
             $newFileName = $this->fileManager->getFilenameGenerator()->generateRandom($file);
+
+            if (!$newFileName) {
+                throw new ImageProcessorException("Filename generator's generateRandom() must return string but the result was NULL. Did you implement it properly?");
+            }
+
+            $this->assertGeneratedName($newFileName, 'generateRandom');
+
             $destination = $this->fileManager->getAbsolutePath($newFileName, $saveToAlias);
 
             $newImage = imagecreatetruecolor($width, $height);

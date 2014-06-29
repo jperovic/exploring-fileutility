@@ -109,7 +109,8 @@ $file = ...; // instance of UploadedFile
 
 $imageProcessor = $this->get('exploring_file_utility.imageprocessor');
 
-$result = $imageProcessor->scale($file, 'rand', 400, 0);
+// upload the file 'alias1' directory alias and resize to the width of 400 pixels.
+$result = $imageProcessor->scale($file, 'alias1', 400, 0);
 
 $imageProcessor->commit();
 ```
@@ -233,6 +234,70 @@ $file = ...; // instance of UploadedFile
 $thumb = $imageProcessor->scaleLargeEdge($file, 'alias1', 400);
 
 $imageProcessor->commit();
+```
+
+Advanced
+===
+
+Creating the custom filename generator
+---
+
+Using the custom filename generator is possible but it must implement the following interface:
+
+    Exploring\FileUtilityBundle\Utility\NameGenerator\FilenameGeneratorInterface
+
+Class example:
+
+```php
+class FooGenerator implements FilenameGeneratorInterface{
+    function createMasked($filename)
+    {
+        // TODO: Implement createMasked() method.
+    }
+
+    function createScaled($filename, $width, $height)
+    {
+        // TODO: Implement createScaled() method.
+    }
+
+    function generateRandom(File $file)
+    {
+        // TODO: Implement generateRandom() method.
+    }
+}
+```
+
+Then, using the service configuration, make the service definition:
+
+```xml
+<parameters>
+    <parameter key="foo.generator.class">Acme\DemoBundle\FooGenerator</parameter>
+</parameters>
+
+<services>
+    <service id="foo.generator" class="%foo.generator.class%">
+    </service>
+</services>
+```
+
+... or if you prefere YAML:
+
+```YAML
+parameters:
+    foo.generator.class: Acme\DemoBundle\FooGenerator
+
+services:
+    foo.generator:
+        class: %foo.generator.class%
+```
+
+Finally, configure the bundle to use this service by providing it's name:
+
+```YAML
+exploring_file_utility:
+    ....
+    filename_generator: foo.generator
+    ....
 ```
 
 

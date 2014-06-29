@@ -1,7 +1,6 @@
 <?php
     namespace Exploring\FileUtilityBundle\Service\Image;
 
-    use Exploring\FileUtilityBundle\Data\FileWrapper;
     use Exploring\FileUtilityBundle\Data\ImageWrapper;
     use Imagick;
     use Symfony\Component\HttpFoundation\File\File;
@@ -34,8 +33,8 @@
             // Create new objects from png's
             $source = new Imagick($file->getRealPath());
             $sourceSize = $source->getimagegeometry();
-            $source->setimagecompression(Imagick::COMPRESSION_NO);
-            $source->setimagecompressionquality(1);
+            $source->setimagecompression(Imagick::COMPRESSION_NO); // TODO: Expose to configuration
+            $source->setimagecompressionquality(1); // TODO: Expose to configuration
             $mask = new Imagick($maskFile->getRealPath());
             $maskSize = $mask->getimagegeometry();
 
@@ -47,7 +46,11 @@
             $source->cropimage($maskSize['width'], $maskSize['height'], 0, 0);
 
             $newFileName = $this->fileManager->getFilenameGenerator()->createMasked($file->getFilename());
+
+            $this->assertGeneratedName($newFileName, 'createMasked');
+
             $destination = $this->fileManager->getAbsolutePath($newFileName, $saveToAlias);
+
 
             // Write image to a file.
             $source->writeImage($destination);
@@ -107,6 +110,9 @@
                                                  $width,
                                                  $height
             );
+
+            $this->assertGeneratedName($newFileName, 'createScaled');
+
             $destination = $this->fileManager->getAbsolutePath($newFileName, $saveToAlias);
 
             $source->writeimage($destination);
@@ -155,6 +161,9 @@
                                                  $width,
                                                  $height
             );
+
+            $this->assertGeneratedName($newFileName, 'createScaled');
+
             $destination = $this->fileManager->getAbsolutePath($newFileName, $saveToAlias);
 
             $source->writeimage($destination);

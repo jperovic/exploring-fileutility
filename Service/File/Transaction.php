@@ -30,6 +30,7 @@
          * @param bool   $isTemporary
          * @param bool   $keepOriginal
          *
+         * @throws FileManagerException
          * @return FileWrapper
          */
         function save(File $file, $saveToAlias, $isTemporary = false, $keepOriginal = false)
@@ -42,6 +43,11 @@
                 $newRealPath = $realPath;
             } else {
                 $newFileName = $this->manager->getFilenameGenerator()->generateRandom($file, $isTemporary);
+
+                if (!$newFileName) {
+                    throw new FileManagerException("Filename generator's generateRandom() must return string but the result was NULL. Did you implement it properly?");
+                }
+
                 $newRealPath = $target . $newFileName;
 
                 if ($keepOriginal) {

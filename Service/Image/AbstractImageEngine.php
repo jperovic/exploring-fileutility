@@ -105,4 +105,21 @@
 
             return $this;
         }
+
+        /**
+         * @param string $name
+         * @param string $invocation
+         *
+         * @throws ImageProcessorException
+         */
+        protected function assertGeneratedName($name, $invocation)
+        {
+            if (!$name) {
+                $error = sprintf(
+                    "Filename generator's %s() must return string but the result was NULL. Did you implement it properly?",
+                    $invocation
+                );
+                throw new ImageProcessorException($error);
+            }
+        }
     }
