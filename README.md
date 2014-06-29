@@ -56,7 +56,7 @@ For example, given configuration above, if you would like to upload file to `ali
 
 By default, filenames are generated via built-in `DefaultFilenameGenerator`. You could change that by overring the `filename_generator` parameter with another **service**.
 
-The bundle comes with some common image operations built-in. The default engine is `gd` but you could use `imagick` as well. You could as set it to point to your own image engine by specifying the **service** name.
+The bundle comes with some common image operations built-in. The default engine is `gd` but you could use `imagick` as well. You could as well set it to point to your own image engine by specifying the **service** name.
 
 The minimalistic configuration would look something like this:
 
