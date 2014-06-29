@@ -5,18 +5,31 @@
     use Exploring\FileUtilityBundle\Service\File\FileManager;
     use Symfony\Component\HttpFoundation\File\File;
 
+    /**
+     * Class ImageProcessor
+     * @package Exploring\FileUtilityBundle\Service\Image
+     *
+     * TODO: crop
+     * TODO: rotate
+     *
+     */
     class ImageProcessor
     {
         const ENGINE_GD = "gd";
 
         const ENGINE_IMAGICK = "imagick";
 
+        /** @var FileManager */
+        private $fileManager;
+
         /** @var AbstractImageEngine */
         private $engine;
 
-        function __construct(AbstractImageEngine $engine)
+        function __construct(FileManager $fileManager, AbstractImageEngine $engine)
         {
+            $this->fileManager = $fileManager;
             $this->engine = $engine;
+            $this->engine->setFileManager($fileManager);
         }
 
         /**
@@ -26,9 +39,25 @@
          *
          * @return FileWrapper
          */
-        public function clipImage(File $file, $saveToAlias, File $maskFile)
+        public function clip(File $file, $saveToAlias, File $maskFile)
         {
-            return $this->engine->clipImage($file, $saveToAlias, $maskFile);
+            return $this->engine->clip($file, $saveToAlias, $maskFile);
+        }
+
+        /**
+         * @param File   $file
+         * @param string $saveToAlias
+         * @param int    $x
+         * @param int    $y
+         * @param int    $width
+         * @param int    $height
+         * @param bool   $keepOriginal
+         *
+         * @return mixed
+         */
+        public function crop(File $file, $saveToAlias, $x, $y, $width, $height, $keepOriginal = false)
+        {
+            return $this->engine->crop($file, $saveToAlias, $x, $y, $width, $height, $keepOriginal);
         }
 
         /**
@@ -63,9 +92,9 @@
          *
          * @return FileWrapper
          */
-        public function scaleImage(File $file, $saveToAlias, $width, $height = 0, $enlarge = true)
+        public function scale(File $file, $saveToAlias, $width, $height = 0, $enlarge = true)
         {
-            return $this->engine->scaleImage($file, $saveToAlias, $width, $height, $enlarge);
+            return $this->engine->scale($file, $saveToAlias, $width, $height, $enlarge);
         }
 
         /**
@@ -73,7 +102,7 @@
          */
         public function getFileManager()
         {
-            return $this->engine->getFileManager();
+            return $this->fileManager;
         }
 
         /**
@@ -81,7 +110,7 @@
          */
         public function commit()
         {
-            $this->getFileManager()->commit();
+            $this->fileManager->commit();
 
             return $this;
         }
@@ -93,7 +122,7 @@
          */
         public function rollback($onlyLastTransation = false)
         {
-            $this->getFileManager()->rollback($onlyLastTransation);
+            $this->fileManager->rollback($onlyLastTransation);
 
             return $this;
         }

@@ -61,20 +61,20 @@
             switch ($imageEngineService) {
                 case self::ENGINE_GD:
                     $arguments = array(
-                        new Reference("exploring_file_utility.imageengine_gd"),
-                        new Reference("exploring_file_utility.manager")
+                        new Reference("exploring_file_utility.manager"),
+                        new Reference("exploring_file_utility.imageengine_gd")
                     );
                     break;
                 case self::ENGINE_IMAGICK:
                     $arguments = array(
-                        new Reference("exploring_file_utility.imageengine_imagick"),
-                        new Reference("exploring_file_utility.manager")
+                        new Reference("exploring_file_utility.manager"),
+                        new Reference("exploring_file_utility.imageengine_imagick")
                     );
                     break;
                 default:
                     $arguments = array(
-                        new Reference($imageEngineService),
-                        new Reference("exploring_file_utility.manager")
+                        new Reference("exploring_file_utility.manager"),
+                        new Reference($imageEngineService)
                     );
             }
 

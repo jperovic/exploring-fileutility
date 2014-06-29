@@ -19,38 +19,35 @@
          */
         protected $fileManager;
 
-        public function __construct(FileManager $fileManager)
-        {
-            $this->fileManager = $fileManager;
-        }
-
         /**
          * @param File   $file
          * @param string $saveToAlias
          * @param File   $maskFile
+         * @param bool   $keepOriginal
          *
          * @return FileWrapper
          */
-        public abstract function clipImage(File $file, $saveToAlias, File $maskFile);
+        public abstract function clip(File $file, $saveToAlias, File $maskFile, $keepOriginal = false);
 
         /**
-         * @param string $filename
-         * @param string $directoryAlias
+         * @param File   $file
+         * @param string $saveToAlias
          * @param int    $size
          * @param bool   $enlarge
+         * @param bool   $keepOriginal
          *
          * @return string
          */
-        public function scaleLargeEdge($filename, $directoryAlias, $size, $enlarge = true)
+        public function scaleLargeEdge(File $file, $saveToAlias, $size, $enlarge = true, $keepOriginal = false)
         {
-            $dim = $this->getImageSize($this->fileManager->getAbsolutePath($filename, $directoryAlias));
+            $dim = $this->getImageSize($file->getRealPath());
 
             $landscape = $dim['width'] > $dim['height'];
 
             if ($landscape) {
-                return $this->scaleImage($filename, $directoryAlias, $size, 0, $enlarge);
+                return $this->scale($file, $saveToAlias, $size, 0, $enlarge, $keepOriginal);
             } else {
-                return $this->scaleImage($filename, $directoryAlias, 0, $size, $enlarge);
+                return $this->scale($file, $saveToAlias, 0, $size, $enlarge, $keepOriginal);
             }
         }
 
@@ -67,17 +64,31 @@
          * @param int    $width
          * @param int    $height
          * @param bool   $enlarge
+         * @param bool   $keepOriginal
          *
          * @return FileWrapper
          */
-        public abstract function scaleImage(File $file, $saveToAlias, $width, $height = 0, $enlarge = true);
+        public abstract function scale(File $file, $saveToAlias, $width, $height = 0, $enlarge = true, $keepOriginal = false);
 
         /**
-         * @return FileManager
+         * @param File   $file
+         * @param string $saveToAlias
+         * @param int    $x
+         * @param int    $y
+         * @param int    $width
+         * @param int    $height
+         * @param bool   $keepOriginal
+         *
+         * @return mixed
          */
-        public function getFileManager()
+        public abstract function crop(File $file, $saveToAlias, $x, $y, $width, $height, $keepOriginal = false);
+
+        /**
+         * @param FileManager $fileManager
+         */
+        public function setFileManager(FileManager $fileManager)
         {
-            return $this->fileManager;
+            $this->fileManager = $fileManager;
         }
 
         /**

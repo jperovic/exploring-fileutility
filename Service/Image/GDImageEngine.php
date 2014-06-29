@@ -2,29 +2,25 @@
     namespace Exploring\FileUtilityBundle\Service\Image;
 
     use Exploring\FileUtilityBundle\Data\FileWrapper;
-    use Exploring\FileUtilityBundle\Service\File\FileManager;
+    use Exploring\FileUtilityBundle\Data\ImageWrapper;
     use Symfony\Component\HttpFoundation\File\File;
     use Symfony\Component\HttpFoundation\File\UploadedFile;
 
     class GDImageEngine extends AbstractImageEngine
     {
-        function __construct(FileManager $fileManager)
-        {
-            parent::__construct($fileManager);
-        }
-
         /**
          * @param File   $file
          * @param string $saveToAlias
          * @param File   $maskFile
+         * @param bool   $keepOriginal
          *
          * @throws ImageProcessorException
          * @return FileWrapper
          */
-        public function clipImage(File $file, $saveToAlias, File $maskFile)
+        public function clip(File $file, $saveToAlias, File $maskFile, $keepOriginal = false)
         {
             if ($file instanceof UploadedFile) {
-                $entry = $this->fileManager->save($file, $saveToAlias, true);
+                $entry = $this->fileManager->save($file, $saveToAlias, true, $keepOriginal);
                 $file = $entry->getFile();
             }
 
@@ -35,26 +31,9 @@
                 throw new ImageProcessorException("Invalid source file.");
             }
 
-            $image = null;
-            if ($type == IMAGETYPE_JPEG) {
-                $image = @imagecreatefromjpeg($realPath);
-            } else {
-                if ($type == IMAGETYPE_PNG) {
-                    $image = @imagecreatefrompng($realPath);
-                } else {
-                    if ($type == IMAGETYPE_GIF) {
-                        $image = @imagecreatefromgif($realPath);
-                    } else {
-                        throw new ImageProcessorException("Unsupported image type!");
-                    }
-                }
-            }
+            $image = $this->createImageObject($realPath, $type);
 
             $mask = @imagecreatefrompng($maskFile->getRealPath());
-
-            if (!$image) {
-                throw new ImageProcessorException("Could not create source object");
-            }
 
             if (!$mask) {
                 throw new ImageProcessorException("Could not create mask object");
@@ -98,7 +77,7 @@
 
             @imagepng($newPicture, $destination, 9);
 
-            return $this->fileManager->save(new File($destination), $saveToAlias);
+            return new ImageWrapper($this->fileManager->save(new File($destination), $saveToAlias), $width, $height);
         }
 
         /**
@@ -107,15 +86,15 @@
          * @param int    $width
          * @param int    $height
          * @param bool   $enlarge
+         * @param bool   $keepOriginal
          *
          * @throws ImageProcessorException
-         *
          * @return FileWrapper
          */
-        public function scaleImage(File $file, $saveToAlias, $width, $height = 0, $enlarge = true)
+        public function scale(File $file, $saveToAlias, $width, $height = 0, $enlarge = true, $keepOriginal = false)
         {
             if ($file instanceof UploadedFile) {
-                $entry = $this->fileManager->save($file, $saveToAlias, true);
+                $entry = $this->fileManager->save($file, $saveToAlias, true, $keepOriginal);
                 $file = $entry->getFile();
             }
 
@@ -127,23 +106,7 @@
                 throw new ImageProcessorException(sprintf("Invalid image dimensions. Got %d x %d", $w, $h));
             }
 
-            if ($type == IMAGETYPE_JPEG) {
-                $Image = @imagecreatefromjpeg($realPath);
-            } else {
-                if ($type == IMAGETYPE_PNG) {
-                    $Image = @imagecreatefrompng($realPath);
-                } else {
-                    if ($type == IMAGETYPE_GIF) {
-                        $Image = @imagecreatefromgif($realPath);
-                    } else {
-                        throw new ImageProcessorException("Invalid image type.");
-                    }
-                }
-            }
-
-            if (!$Image) {
-                throw new ImageProcessorException("Couldn't create source image.");
-            }
+            $Image = $this->createImageObject($realPath, $type);
 
             $isLandscape = $w > $h;
             $ratio = $isLandscape ? $w / $h : $h / $w;
@@ -169,20 +132,42 @@
             );
             $destination = $this->fileManager->getAbsolutePath($scaledFileName, $saveToAlias);
 
-            $NewImage = imagecreatetruecolor($width, $height);
-            imagecopyresampled($NewImage, $Image, 0, 0, 0, 0, $width, $height, $w, $h);
+            $newImage = imagecreatetruecolor($width, $height);
+            imagecopyresampled($newImage, $Image, 0, 0, 0, 0, $width, $height, $w, $h);
             imagedestroy($Image);
 
-            if ($type == IMAGETYPE_JPEG) {
-                imagejpeg($NewImage, $destination, 100);
-            } elseif ($type == IMAGETYPE_PNG) {
-                imagepng($NewImage, $destination, 9);
-            } elseif ($type == IMAGETYPE_GIF) {
-                imagegif($NewImage, $destination);
-            }
-            imagedestroy($NewImage);
+            $this->saveImageObject($newImage, $type, $destination);
 
-            return $this->fileManager->save(new File($destination), $saveToAlias);
+            return new ImageWrapper($this->fileManager->save(new File($destination), $saveToAlias), $width, $height);
+        }
+
+        public function crop(File $file, $saveToAlias, $x, $y, $width, $height, $keepOriginal = false)
+        {
+            if ($file instanceof UploadedFile) {
+                $entry = $this->fileManager->save($file, $saveToAlias, true, $keepOriginal);
+                $file = $entry->getFile();
+            }
+
+            $realPath = $file->getRealPath();
+
+            list($w, $h, $type) = getimagesize($realPath);
+
+            if (!$w || !$h) {
+                throw new ImageProcessorException(sprintf("Invalid image dimensions. Got %d x %d", $w, $h));
+            }
+
+            $image = $this->createImageObject($realPath, $type);
+
+            $newFileName = $this->fileManager->getFilenameGenerator()->generateRandom($file);
+            $destination = $this->fileManager->getAbsolutePath($newFileName, $saveToAlias);
+
+            $newImage = imagecreatetruecolor($width, $height);
+            imagecopyresampled($newImage, $image, 0, 0, $x, $y, $width, $height, $width, $height);
+            imagedestroy($image);
+
+            $this->saveImageObject($newImage, $type, $destination);
+
+            return new ImageWrapper($this->fileManager->save(new File($destination), $saveToAlias), $width, $height);
         }
 
         /**
@@ -195,5 +180,36 @@
             list($w, $h) = getimagesize($filename);
 
             return array('width' => $w, 'height' => $h);
+        }
+
+        private function createImageObject($realPath, $type)
+        {
+            if ($type == IMAGETYPE_JPEG) {
+                $image = @imagecreatefromjpeg($realPath);
+            } else if ($type == IMAGETYPE_PNG) {
+                $image = @imagecreatefrompng($realPath);
+            } else if ($type == IMAGETYPE_GIF) {
+                $image = @imagecreatefromgif($realPath);
+            } else {
+                throw new ImageProcessorException("Invalid image type.");
+            }
+
+            if (!$image) {
+                throw new ImageProcessorException("Couldn't create source image.");
+            }
+
+            return $image;
+        }
+
+        private function saveImageObject($image, $type, $destination)
+        {
+            if ($type == IMAGETYPE_JPEG) {
+                imagejpeg($image, $destination, 100); // TODO: Expose to config
+            } elseif ($type == IMAGETYPE_PNG) {
+                imagepng($image, $destination, 9); // TODO: Expose to config
+            } elseif ($type == IMAGETYPE_GIF) {
+                imagegif($image, $destination);
+            }
+            imagedestroy($image);
         }
     }

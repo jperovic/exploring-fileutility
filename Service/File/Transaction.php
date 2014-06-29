@@ -3,7 +3,6 @@
 
     use Exploring\FileUtilityBundle\Data\FileWrapper;
     use Symfony\Component\HttpFoundation\File\File;
-    use Symfony\Component\HttpFoundation\File\UploadedFile;
 
     class Transaction
     {
@@ -29,10 +28,11 @@
          * @param File   $file
          * @param string $saveToAlias
          * @param bool   $temp
+         * @param bool   $keepOriginal
          *
          * @return FileWrapper
          */
-        function save(File $file, $saveToAlias, $temp = false)
+        function save(File $file, $saveToAlias, $temp = false, $keepOriginal = false)
         {
             $target = $this->manager->resolveDirectoryAlias($saveToAlias);
 
@@ -43,7 +43,8 @@
             } else {
                 $newFileName = $this->manager->getFilenameGenerator()->generateRandom($file, $temp);
                 $newRealPath = $target . $newFileName;
-                if ($temp && $file instanceof UploadedFile) {
+
+                if ($keepOriginal) {
                     copy($file->getRealPath(), $newRealPath);
                 } else {
                     $file->move($target, $newFileName);

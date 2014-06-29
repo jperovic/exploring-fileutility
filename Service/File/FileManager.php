@@ -106,12 +106,13 @@
          * @param File   $file
          * @param string $saveToAlias
          * @param bool   $temp
+         * @param bool   $keepOriginal
          *
          * @return FileWrapper
          */
-        public function save(File $file, $saveToAlias, $temp = false)
+        public function save(File $file, $saveToAlias, $temp = false, $keepOriginal = false)
         {
-            return $this->getTransaction()->save($file, $saveToAlias, $temp);
+            return $this->getTransaction()->save($file, $saveToAlias, $temp, $keepOriginal);
         }
 
         /**
@@ -138,15 +139,18 @@
             return $handle->getPath() . DIRECTORY_SEPARATOR . $handle->getFilename();
         }
 
-//        /**
-//         * @param Entry $file
-//         *
-//         * @return string
-//         */
-//        public function getAbsolutePathOfFile(Entry $file)
-//        {
-//            return $this->getAbsolutePath($file->get(), $file->getDirectoryAlias());
-//        }
+        /**
+         * @param $filename
+         * @param $directoryAlias
+         *
+         * @return FileWrapper
+         */
+        public function getFile($filename, $directoryAlias)
+        {
+            $absolute = $this->getAbsolutePath($filename, $directoryAlias, true);
+
+            return new FileWrapper($absolute, $directoryAlias);
+        }
 
         public function guessDirectoryAliasOfFile(File $file)
         {
@@ -217,7 +221,6 @@
          * @param $directoryAlias
          *
          * @return null|string
-         * T
          *
          * TODO: Sta sa ovom f-om?
          *
