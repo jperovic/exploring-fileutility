@@ -26,6 +26,22 @@
         }
 
         /**
+         * @return null|string
+         */
+        public function getRealPath()
+        {
+            return $this->file->getRealPath();
+        }
+
+        /**
+         * @return null|string
+         */
+        public function getFileName()
+        {
+            return $this->file->getFilename();
+        }
+
+        /**
          * @return string
          */
         public function getDirectoryAlias()

@@ -16,13 +16,7 @@
      */
     class FileManager
     {
-        const UPLOAD_DIR = "/tmp";
-
-        const QUEUE_OLD = "__old__";
-
-        const QUEUE_NEW = "__new__";
-
-        const QUEUE_TEMP = "__temp__";
+        const DEFAULT_UPLOAD_DIR = "/tmp";
 
         /**
          * @var string[]
@@ -45,13 +39,13 @@
         private $transactions = array();
 
         /**
-         * @param array                             $directoryAliases
-         * @param string                            $uploadsRoot
-         * @param FilenameGeneratorInterface|string $filenameGenerator
+         * @param array                      $directoryAliases
+         * @param string                     $uploadsRoot
+         * @param FilenameGeneratorInterface $filenameGenerator
          *
          * @throws InvalidArgumentException
          */
-        function __construct($directoryAliases, $uploadsRoot = self::UPLOAD_DIR, FilenameGeneratorInterface $filenameGenerator = null)
+        function __construct($directoryAliases, $uploadsRoot = self::DEFAULT_UPLOAD_DIR, FilenameGeneratorInterface $filenameGenerator = null)
         {
             $this->uploadsRoot = rtrim($uploadsRoot, DIRECTORY_SEPARATOR);
 
@@ -128,13 +122,13 @@
         /**
          * @param string $filename
          * @param string $directoryAlias
-         * @param bool   $check
+         * @param bool   $checkFileExists
          *
          * @return string
          */
-        public function getAbsolutePath($filename, $directoryAlias, $check = false)
+        public function getAbsolutePath($filename, $directoryAlias, $checkFileExists = false)
         {
-            $handle = new File($this->resolveDirectoryAlias($directoryAlias) . $filename, $check);
+            $handle = new File($this->resolveDirectoryAlias($directoryAlias) . $filename, $checkFileExists);
 
             return $handle->getPath() . DIRECTORY_SEPARATOR . $handle->getFilename();
         }
@@ -145,7 +139,7 @@
          *
          * @return FileWrapper
          */
-        public function getFile($filename, $directoryAlias)
+        public function getFileWrapper($filename, $directoryAlias)
         {
             $absolute = $this->getAbsolutePath($filename, $directoryAlias, true);
 
@@ -221,9 +215,6 @@
          * @param $directoryAlias
          *
          * @return null|string
-         *
-         * TODO: Sta sa ovom f-om?
-         *
          */
         public function stripAbsolutePath($path, $directoryAlias)
         {

@@ -9,6 +9,11 @@
         /** @var int */
         private $height;
 
+        /**
+         * @param FileWrapper $fileWrapper
+         * @param int         $width
+         * @param int         $height
+         */
         public function __construct(FileWrapper $fileWrapper, $width, $height)
         {
             parent::__construct($fileWrapper->getFile(), $fileWrapper->getDirectoryAlias());

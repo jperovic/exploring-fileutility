@@ -7,13 +7,6 @@
     use Symfony\Component\HttpFoundation\File\File;
     use Symfony\Component\HttpFoundation\File\UploadedFile;
 
-    /**
-     * Created by JetBrains PhpStorm.
-     * User: root
-     * Date: 2/10/13
-     * Time: 4:24 AM
-     * To change this template use File | Settings | File Templates.
-     */
     class ImagickImageEngine extends AbstractImageEngine
     {
         function __construct()
@@ -29,7 +22,7 @@
          * @param File   $maskFile
          * @param bool   $keepOriginal
          *
-         * @return FileWrapper
+         * @return ImageWrapper
          */
         public function clip(File $file, $saveToAlias, File $maskFile, $keepOriginal = false)
         {
@@ -76,7 +69,7 @@
          * @param bool   $enlarge
          * @param bool   $keepOriginal
          *
-         * @return FileWrapper
+         * @return ImageWrapper
          */
         public function scale(File $file, $saveToAlias, $width, $height = 0, $enlarge = true, $keepOriginal = false)
         {
@@ -145,7 +138,7 @@
          * @param int    $height
          * @param bool   $keepOriginal
          *
-         * @return mixed
+         * @return ImageWrapper
          */
         public function crop(File $file, $saveToAlias, $x, $y, $width, $height, $keepOriginal = false)
         {

@@ -5,13 +5,6 @@
     use Exploring\FileUtilityBundle\Service\File\FileManager;
     use Symfony\Component\HttpFoundation\File\File;
 
-    /**
-     * Created by JetBrains PhpStorm.
-     * User: root
-     * Date: 2/10/13
-     * Time: 4:24 AM
-     * To change this template use File | Settings | File Templates.
-     */
     abstract class AbstractImageEngine
     {
         /**

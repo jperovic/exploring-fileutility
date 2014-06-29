@@ -50,7 +50,7 @@ exploring_file_utility:
 The idea behind file management **is not to upload the file to some absolute/relative path but to upload it to the directory alias**.
 Think of an alias as a symbolic link (or shortcut). During the runtime the value of alias is appended to `upload_root` forming the absolute path.
 
-For example, given configuration above, if you would like to upload file to `alias1` that file would end up in:
+For example, given the configuration above, if you would like to upload file to `alias1` that file would end up in:
 
     %kernel.root_dir%/../web/uploads/relative_name_of_the_directory
 
@@ -179,7 +179,7 @@ $newFilename = $fileWrapper->getFile()->getFilename();
 $fileManager->commit();
 ```
 
-4. Create thumbanail image:
+4. Create thumbnail image:
 ---
 
 ```php
@@ -193,7 +193,7 @@ $result = $imageProcessor->scale($file, 'alias1', 120);
 $imageProcessor->commit();
 ```
 
-5. Create both small and large verion of image:
+5. Create both small and large version of image:
 ---
 
 ```php

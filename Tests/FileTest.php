@@ -104,7 +104,7 @@
             $filename = $wrap->getFile()->getFilename();
             $alias = $wrap->getDirectoryAlias();
 
-            $wrap2 = $this->fm->getFile($filename, $alias);
+            $wrap2 = $this->fm->getFileWrapper($filename, $alias);
 
             $this->assertEquals($filename, $wrap2->getFile()->getFilename());
             $this->assertEquals($alias, $wrap2->getDirectoryAlias());
@@ -148,43 +148,12 @@
             $this->assertTrue(file_exists($wrap->getFile()->getRealPath()));
         }
 
-
-
-//        public function testUpload()
-//        {
-//            $photo = new UploadedFile(__DIR__ . '/Resources/tomask.png', 'tomask.png', 'image/png', filesize(
-//                __DIR__ . '/Resources/tomask.png'
-//            ), null, true);
-//            $newFileName = $this->manager->getFilenameGenerator()->generateRandom($photo);
-//            copy(__DIR__ . '/Resources/tomask.png', __DIR__ . '/Resources/' . $newFileName);
-//            $photo = new UploadedFile(__DIR__ . '/Resources/' . $newFileName, $newFileName, 'image/png', filesize(
-//                __DIR__ . '/Resources/' . $newFileName
-//            ), null, true);
-//
-//            $newFileName = $this->manager->beginTransaction()->save($photo, 'news');
-//
-//            $this->manager->commit();
-//
-//            $this->manager->beginTransaction()->remove($newFileName, 'news');
-//
-//            $this->manager->rollback();
-//
-//            $this->manager->remove($newFileName, 'news');
-//        }
-//
-//        public function testReferenceFile()
-//        {
-//            $photo = new UploadedFile(__DIR__ . '/Resources/tomask.png', 'tomask.png', 'image/png', filesize(
-//                __DIR__ . '/Resources/tomask.png'
-//            ), null, true);
-//            $newFileName = $this->manager->getFilenameGenerator()->generateRandom($photo);
-//            $newFullPath = $this->manager->resolveDirectoryAlias('news') . $newFileName;
-//            copy(__DIR__ . '/Resources/tomask.png', $newFullPath);
-//
-//            $M = $this->manager->beginTransaction();
-//
-//            $M->save($newFullPath, 'news');
-//            $M->remove($newFileName, 'news');
-//        }
+        /**
+         * @expectedException \Symfony\Component\HttpFoundation\File\Exception\FileNotFoundException
+         */
+        public function testTryToResolveInvalidFile()
+        {
+            $this->fm->getFileWrapper('foo.jpg', 't');
+        }
     }
  

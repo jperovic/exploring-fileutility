@@ -10,29 +10,29 @@
         private $manager;
 
         /** @var TransactionEntry[] */
-        private $enties;
+        private $entries;
 
         /** @var array */
-        private $tempFiles;
+        private $temporaryFiles;
 
         function __construct(FileManager $manager)
         {
             $this->manager = $manager;
 
-            $this->enties = array();
+            $this->entries = array();
 
-            $this->tempFiles = array();
+            $this->temporaryFiles = array();
         }
 
         /**
          * @param File   $file
          * @param string $saveToAlias
-         * @param bool   $temp
+         * @param bool   $isTemporary
          * @param bool   $keepOriginal
          *
          * @return FileWrapper
          */
-        function save(File $file, $saveToAlias, $temp = false, $keepOriginal = false)
+        function save(File $file, $saveToAlias, $isTemporary = false, $keepOriginal = false)
         {
             $target = $this->manager->resolveDirectoryAlias($saveToAlias);
 
@@ -41,12 +41,12 @@
             if (strpos($realPath, $target) === 0) {
                 $newRealPath = $realPath;
             } else {
-                $newFileName = $this->manager->getFilenameGenerator()->generateRandom($file, $temp);
+                $newFileName = $this->manager->getFilenameGenerator()->generateRandom($file, $isTemporary);
                 $newRealPath = $target . $newFileName;
 
                 if ($keepOriginal) {
-                    if ($temp && array_key_exists($file->getFilename(), $this->tempFiles)) {
-                        $newRealPath = $this->tempFiles[$file->getFilename()];
+                    if ($isTemporary && array_key_exists($file->getFilename(), $this->temporaryFiles)) {
+                        $newRealPath = $this->temporaryFiles[$file->getFilename()];
                     } else {
                         copy($file->getRealPath(), $newRealPath);
                     }
@@ -58,10 +58,10 @@
             // create the reference to new file
             $wrap = new FileWrapper($newRealPath, $saveToAlias);
 
-            $this->enties[] = new TransactionEntry(TransactionEntry::UPLOAD, $newRealPath);
+            $this->entries[] = new TransactionEntry(TransactionEntry::UPLOAD, $newRealPath);
 
-            if ($temp) {
-                $this->tempFiles[$file->getFilename()] = $newRealPath;
+            if ($isTemporary) {
+                $this->temporaryFiles[$file->getFilename()] = $newRealPath;
             }
 
             return $wrap;
@@ -72,8 +72,6 @@
          * @param string $directoryAlias
          *
          * @throws FileManagerException
-         * @internal param string $queue
-         *
          * @return bool
          */
         function remove($filename, $directoryAlias)
@@ -88,7 +86,7 @@
 
                 $entryData = array($absolutePath, $target . md5($filename . time()));
                 rename($absolutePath, $entryData[1]);
-                $this->enties[] = new TransactionEntry(TransactionEntry::REMOVE, $entryData);
+                $this->entries[] = new TransactionEntry(TransactionEntry::REMOVE, $entryData);
 
                 return true;
             }
@@ -98,28 +96,28 @@
 
         function commit()
         {
-            foreach ($this->enties as $e) {
+            foreach ($this->entries as $e) {
                 if ($e->getAction() == TransactionEntry::REMOVE) {
                     $data = $e->getData();
                     @unlink($data[1]);
                 }
             }
 
-            foreach ($this->tempFiles as $tmp) {
+            foreach ($this->temporaryFiles as $tmp) {
                 @unlink($tmp);
             }
         }
 
         function rollback()
         {
-            while (!empty($this->enties)) {
+            while (!empty($this->entries)) {
                 /** @var TransactionEntry $e */
-                $e = array_pop($this->enties);
+                $e = array_pop($this->entries);
                 $data = $e->getData();
 
                 if ($e->getAction() == TransactionEntry::UPLOAD) {
                     @unlink($data);
-                } else {
+                } else { // REMOVE
                     rename($data[1], $data[0]);
                 }
             }
