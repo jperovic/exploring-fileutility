@@ -36,12 +36,13 @@
          * @param File   $file
          * @param string $saveToAlias
          * @param File   $maskFile
+         * @param bool   $keepOriginal
          *
          * @return FileWrapper
          */
-        public function clip(File $file, $saveToAlias, File $maskFile)
+        public function clip(File $file, $saveToAlias, File $maskFile, $keepOriginal = false)
         {
-            return $this->engine->clip($file, $saveToAlias, $maskFile);
+            return $this->engine->clip($file, $saveToAlias, $maskFile, $keepOriginal);
         }
 
         /**
@@ -65,12 +66,13 @@
          * @param string $saveToAlias
          * @param int    $size
          * @param bool   $enlarge
+         * @param bool   $keepOriginal
          *
          * @return FileWrapper
          */
-        public function scaleLargeEdge(File $file, $saveToAlias, $size, $enlarge = true)
+        public function scaleLargeEdge(File $file, $saveToAlias, $size, $enlarge = true, $keepOriginal = false)
         {
-            return $this->engine->scaleLargeEdge($file, $saveToAlias, $size, $enlarge);
+            return $this->engine->scaleLargeEdge($file, $saveToAlias, $size, $enlarge, $keepOriginal);
         }
 
         /**
@@ -89,12 +91,13 @@
          * @param int    $width
          * @param int    $height
          * @param bool   $enlarge
+         * @param bool   $keepOriginal
          *
          * @return FileWrapper
          */
-        public function scale(File $file, $saveToAlias, $width, $height = 0, $enlarge = true)
+        public function scale(File $file, $saveToAlias, $width, $height = 0, $enlarge = true, $keepOriginal = false)
         {
-            return $this->engine->scale($file, $saveToAlias, $width, $height, $enlarge);
+            return $this->engine->scale($file, $saveToAlias, $width, $height, $enlarge, $keepOriginal);
         }
 
         /**

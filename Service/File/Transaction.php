@@ -45,22 +45,26 @@
                 $newRealPath = $target . $newFileName;
 
                 if ($keepOriginal) {
-                    copy($file->getRealPath(), $newRealPath);
+                    if ($temp && array_key_exists($file->getFilename(), $this->tempFiles)) {
+                        $newRealPath = $this->tempFiles[$file->getFilename()];
+                    } else {
+                        copy($file->getRealPath(), $newRealPath);
+                    }
                 } else {
                     $file->move($target, $newFileName);
                 }
             }
 
             // create the reference to new file
-            $file = new FileWrapper($newRealPath, $saveToAlias);
+            $wrap = new FileWrapper($newRealPath, $saveToAlias);
 
             $this->enties[] = new TransactionEntry(TransactionEntry::UPLOAD, $newRealPath);
 
             if ($temp) {
-                $this->tempFiles[] = $newRealPath;
+                $this->tempFiles[$file->getFilename()] = $newRealPath;
             }
 
-            return $file;
+            return $wrap;
         }
 
         /**
