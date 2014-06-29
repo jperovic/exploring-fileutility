@@ -43,8 +43,15 @@ exploring_file_utility:
         alias1: 'relative_name_of_the_directory'
         alias2: 'another_name_of_the_directory'
     filename_generator: ~
-    image_engine: ~
     upload_root: %kernel.root_dir%/../web/uploads
+    image_engine: gd
+    gd:
+        quality:
+            jpeg: 75
+            png: 7
+    imagick:
+        compression: 1
+        quality: 86
 ```
 
 The idea behind file management **is not to upload the file to some absolute/relative path but to upload it to the directory alias**.
@@ -116,6 +123,45 @@ $imageProcessor->commit();
 ```
 
 This will the uploaded file and resize it to width of **400 pixels**, keeping the ratio. More examples are given at the bottom of this document.
+
+Image engines
+---
+
+The `ImageProccessor` uses behind the scene image engine that does image manipulations. This bundle comes with `gd` and `imagick` engine, built-in.
+You can use either of them by specifing `image_engine` configuration parameter:
+
+```YAML
+exploring_file_utility:
+    ....
+    image_engine: gd or imagick
+```
+
+You can also point `image_engine` to a custom service. **Warning:** This service must extend `Exploring\FileUtilityBundle\Service\Image\AbstractImageEngine` class.
+
+Built-in engines have a default way of functioning but you can tweek some of the options, mainly quality-wise.
+
+For GD you can specify:
+
+```YAML
+exploring_file_utility:
+    ....
+    gd:
+        quality:
+            jpeg: 75
+            png: 7
+```
+
+and for the Imagick you can:
+
+```YAML
+exploring_file_utility:
+    ....
+    imagick:
+        compression: 1
+        quality: 86
+```
+
+For list of available Imagick's compression methods see Imagick::COMPRESSION_* constants.
 
 Recepies
 ---

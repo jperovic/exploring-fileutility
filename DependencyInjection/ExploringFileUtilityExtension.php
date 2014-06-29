@@ -27,6 +27,19 @@
             $container->setParameter('exploring_file_utility.filename_generator', $config['filename_generator']);
             $container->setParameter('exploring_file_utility.image_engine', $config['image_engine']);
 
+            $container->setParameter(
+                      'exploring_file_utility.image_engine.gd.config',
+                          array(
+                              'quality' => $config['gd']['quality']
+                          )
+            );
+            $container->setParameter(
+                      'exploring_file_utility.image_engine.imagick.config',
+                          array(
+                              'quality' => $config['imagick']
+                          )
+            );
+
             $loader = new Loader\XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
             $loader->load('services.xml');
         }

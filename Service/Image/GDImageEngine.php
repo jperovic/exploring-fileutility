@@ -8,6 +8,14 @@
 
     class GDImageEngine extends AbstractImageEngine
     {
+        /** @var array */
+        private $configuration;
+
+        function __construct(array $configuration)
+        {
+            $this->configuration = $configuration;
+        }
+
         /**
          * @param File   $file
          * @param string $saveToAlias
@@ -217,9 +225,9 @@
         private function saveImageObject($image, $type, $destination)
         {
             if ($type == IMAGETYPE_JPEG) {
-                imagejpeg($image, $destination, 100); // TODO: Expose to config
+                imagejpeg($image, $destination, $this->configuration['quality']['jpeg']);
             } elseif ($type == IMAGETYPE_PNG) {
-                imagepng($image, $destination, 9); // TODO: Expose to config
+                imagepng($image, $destination, $this->configuration['quality']['png']);
             } elseif ($type == IMAGETYPE_GIF) {
                 imagegif($image, $destination);
             }

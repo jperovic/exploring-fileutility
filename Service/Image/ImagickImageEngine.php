@@ -8,11 +8,15 @@
 
     class ImagickImageEngine extends AbstractImageEngine
     {
-        function __construct()
+        private $configuration;
+
+        function __construct(array $configuration)
         {
             if (!class_exists("Imagick")) {
                 throw new ImageProcessorException("Imagick library class was not found. Did you forget to install it?", 500);
             }
+
+            $this->configuration = $configuration;
         }
 
         /**
@@ -33,8 +37,8 @@
             // Create new objects from png's
             $source = new Imagick($file->getRealPath());
             $sourceSize = $source->getimagegeometry();
-            $source->setimagecompression(Imagick::COMPRESSION_NO); // TODO: Expose to configuration
-            $source->setimagecompressionquality(1); // TODO: Expose to configuration
+            $source->setimagecompression($this->configuration['compression']);
+            $source->setimagecompressionquality($this->configuration['quality']);
             $mask = new Imagick($maskFile->getRealPath());
             $maskSize = $mask->getimagegeometry();
 
@@ -82,6 +86,8 @@
             }
 
             $source = new Imagick($file->getRealPath());
+            $source->setimagecompression($this->configuration['compression']);
+            $source->setimagecompressionquality($this->configuration['quality']);
             $size = $source->getimagegeometry();
             $w = $size['width'];
             $h = $size['height'];
@@ -154,6 +160,8 @@
             }
 
             $source = new Imagick($file->getRealPath());
+            $source->setimagecompression($this->configuration['compression']);
+            $source->setimagecompressionquality($this->configuration['quality']);
             $source->cropimage($width, $width, $x, $y);
 
             $newFileName = $this->fileManager->getFilenameGenerator()->createScaled(

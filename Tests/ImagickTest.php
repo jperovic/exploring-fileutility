@@ -11,6 +11,6 @@
         public function setUp()
         {
             $fm = new FileManager(array('t' => 'temp'), __DIR__ . '/Resources/');
-            $this->ip = new ImageProcessor($fm, new ImagickImageEngine());
+            $this->ip = new ImageProcessor($fm, new ImagickImageEngine(array('compression' => 1, 'quality' => 86)));
         }
     }

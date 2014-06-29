@@ -23,10 +23,12 @@
 
         <service id="exploring_file_utility.imageengine_gd" class="%exploring_file_utility.imageengine_gd.class%"
                  public="false">
+            <argument>%exploring_file_utility.image_engine.gd.config%</argument>
         </service>
 
         <service id="exploring_file_utility.imageengine_imagick"
                  class="%exploring_file_utility.imageengine_imagick.class%" public="false">
+            <argument>%exploring_file_utility.image_engine.imagick.config%</argument>
         </service>
     </services>
 </container>
