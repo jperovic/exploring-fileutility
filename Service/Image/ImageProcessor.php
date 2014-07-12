@@ -2,16 +2,16 @@
     namespace Exploring\FileUtilityBundle\Service\Image;
 
     use Exploring\FileUtilityBundle\Data\FileWrapper;
+    use Exploring\FileUtilityBundle\Data\ImageWrapper;
     use Exploring\FileUtilityBundle\Service\File\FileManager;
+    use Exploring\FileUtilityBundle\Service\Image\Chains\Executor;
     use Symfony\Component\HttpFoundation\File\File;
 
     /**
      * Class ImageProcessor
      * @package Exploring\FileUtilityBundle\Service\Image
      *
-     * TODO: crop
      * TODO: rotate
-     *
      */
     class ImageProcessor
     {
@@ -25,11 +25,18 @@
         /** @var AbstractImageEngine */
         private $engine;
 
-        function __construct(FileManager $fileManager, AbstractImageEngine $engine)
+        /**
+         * @var Executor
+         */
+        private $chainExecutor;
+
+        function __construct(FileManager $fileManager, AbstractImageEngine $engine, Executor $chainExecutor = null)
         {
             $this->fileManager = $fileManager;
             $this->engine = $engine;
             $this->engine->setFileManager($fileManager);
+            $this->chainExecutor = $chainExecutor;
+            $this->chainExecutor->setProcessor($this);
         }
 
         /**
@@ -98,6 +105,18 @@
         public function scale(File $file, $saveToAlias, $width, $height = 0, $enlarge = true, $keepOriginal = false)
         {
             return $this->engine->scale($file, $saveToAlias, $width, $height, $enlarge, $keepOriginal);
+        }
+
+        /**
+         * @param File        $file
+         * @param string      $chainName
+         * @param string|null $saveToAlias
+         *
+         * @return ImageWrapper
+         */
+        public function applyChain(File $file, $chainName, $saveToAlias = null)
+        {
+            return $this->chainExecutor->execute($file, $chainName, $saveToAlias);
         }
 
         /**

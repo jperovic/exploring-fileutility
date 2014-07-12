@@ -40,6 +40,8 @@
                           )
             );
 
+            $container->setParameter('exploring_file_utility.image_chains', $config['chains']);
+
             $loader = new Loader\XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
             $loader->load('services.xml');
         }

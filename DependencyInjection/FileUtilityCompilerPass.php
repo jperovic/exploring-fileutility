@@ -56,25 +56,51 @@
             $container->getDefinition("exploring_file_utility.manager")
                       ->setArguments(array($aliases, $uploadRoot, $filenameGenerator));
 
+            $chainExecutorRef = null;
+            $chains = $container->getParameter('exploring_file_utility.image_chains');
+
+            if ($chains) {
+                $taggedChainSteps = array_keys($container->findTaggedServiceIds('exploring_file_utility.image_chain_step'));
+
+                $stepRefs = array();
+
+                foreach ($taggedChainSteps as $stepName) {
+                    $stepRefs[] = $container->getDefinition($stepName);
+                }
+
+                $container->getDefinition('exploring_file_utility.image_chain_executor')
+                          ->setArguments(
+                          array(
+                              $chains,
+                              $stepRefs
+                          )
+                    );
+
+                $chainExecutorRef = new Reference('exploring_file_utility.image_chain_executor');
+            }
+
             $imageEngineService = $container->getParameter("exploring_file_utility.image_engine");
 
             switch ($imageEngineService) {
                 case self::ENGINE_GD:
                     $arguments = array(
                         new Reference("exploring_file_utility.manager"),
-                        new Reference("exploring_file_utility.imageengine_gd")
+                        new Reference("exploring_file_utility.imageengine_gd"),
+                        $chainExecutorRef
                     );
                     break;
                 case self::ENGINE_IMAGICK:
                     $arguments = array(
                         new Reference("exploring_file_utility.manager"),
-                        new Reference("exploring_file_utility.imageengine_imagick")
+                        new Reference("exploring_file_utility.imageengine_imagick"),
+                        $chainExecutorRef
                     );
                     break;
                 default:
                     $arguments = array(
                         new Reference("exploring_file_utility.manager"),
-                        new Reference($imageEngineService)
+                        new Reference($imageEngineService),
+                        $chainExecutorRef
                     );
             }
 

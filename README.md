@@ -35,27 +35,22 @@ You are all set.
 Configuration
 ---
 
-The bundle uses several configutaion entries.
+The bundle uses several configutaion entries. This is how the minimalistic configuation should look like:
 
 ```YAML
 exploring_file_utility:
     directories:
         alias1: 'relative_name_of_the_directory'
         alias2: 'another_name_of_the_directory'
-    filename_generator: ~
+        alias3: 'foo_directory'
+        ...
     upload_root: %kernel.root_dir%/../web/uploads
-    image_engine: gd
-    gd:
-        quality:
-            jpeg: 75
-            png: 7
-    imagick:
-        compression: 1
-        quality: 86
 ```
 
+You can find full configuration reference here.
+
 The idea behind file management **is not to upload the file to some absolute/relative path but to upload it to the directory alias**.
-Think of an alias as a symbolic link (or shortcut). During the runtime the value of alias is appended to `upload_root` forming the absolute path.
+Think of an alias as a symbolic link (or shortcut). During the runtime the value of alias is appended to `upload_root`, forming the absolute path.
 
 For example, given the configuration above, if you would like to upload file to `alias1` that file would end up in:
 
@@ -67,15 +62,7 @@ The bundle comes with some common image operations built-in. The default engine 
 
 The minimalistic configuration would look something like this:
 
-```YAML
-exploring_file_utility:
-    directories:
-        alias1: 'relative_name_of_the_directory'
-        alias2: 'another_name_of_the_directory'
-        alias3: 'foo_directory'
-        ...
-    upload_root: %kernel.root_dir%/../web/uploads
-```
+
 
 Using the file manager
 ---
@@ -162,6 +149,55 @@ exploring_file_utility:
 ```
 
 For list of available Imagick's compression methods see Imagick::COMPRESSION_* constants.
+
+Image chains
+---
+
+If you plan to apply multiple operations over image file you may consider using image chains.
+Image chains are simply named list of operations, with joined arguments that will be executed.
+
+You can configure image chains like this:
+
+```YAML
+exploring_file_utility:
+    ....
+    chains:
+        chain_name:
+            alias: name of directory alias
+            steps:
+                step_name: arguments
+```
+
+Every image manipulation provided by this bundle is supported by chains. For example, if you would like first to scale image and then crop the top-left 50px you would need to configure:
+
+```YAML
+exploring_file_utility:
+    ....
+    chains:
+        foo_chain:
+            alias: some_alias
+            steps:
+                scale: [200, 0]
+                crop: [0, 0, 50, 50]
+```
+
+and then invoke the chain by:
+
+```php
+$file = ...; // instance of UploadedFile
+
+$imageProcessor = $this->get('exploring_file_utility.imageprocessor');
+
+// upload the file 'alias1' directory alias and resize to the width of 400 pixels.
+$result = $imageProcessor->applyChain($file, 'foo_chain');
+```
+
+**Note:** The method `applyChain` also accepts third parameter `saveToAlias` in you would like to override the one configured in chain definition.
+
+Build-in chain steps' names are: `crop`, `scale`, `large_edge` and `clip`.
+
+You can also make your-own chain step. Please see the "Advanced" section on the bottom of this document.
+
 
 Recepies
 ---
@@ -326,7 +362,7 @@ Then, using the service configuration, make the service definition:
 </services>
 ```
 
-... or if you prefere YAML:
+... or if you prefer YAML:
 
 ```YAML
 parameters:
@@ -345,6 +381,69 @@ exploring_file_utility:
     filename_generator: foo.generator
     ....
 ```
+
+Creating custom image chain step
+---
+
+In order to create image chain step you need to implement the interface:
+
+`Exploring\FileUtilityBundle\Service\Image\Chains\Steps\ChainStepInterface`
+
+```php
+class FooStep implements ChainStepInterface {
+
+    public function execute(ImageProcessor $processor, FileWrapper $fileWrapper, $saveToAlias, array $arguments = array()){
+        # Your logic here
+    }
+
+    public function getName(){
+        return "some_name"; Your step's name, used in configuration.
+    }
+
+}
+```
+
+You will also need to to tag this class as your service with `exploring_file_utility.image_chain_step`:
+
+```xml
+<parameters>
+    <parameter key="foo.step.class">Acme\DemoBundle\FooStep</parameter>
+</parameters>
+
+<services>
+    <service id="foo.step" class="%foo.step.class%">
+        <tag name="exploring_file_utility.image_chain_step"/>
+    </service>
+</services>
+```
+
+.... or if you prefer YAML:
+
+```YAML
+parameters:
+    foo.step.class: Acme\DemoBundle\FooStep
+
+services:
+    foo.step:
+        class: %foo.step.class%
+        tags:
+            -  { name: exploring_file_utility.image_chain_step }
+```
+
+After this, you just need to include your step in configuration. For example:
+
+```YAML
+exploring_file_utility:
+    ....
+    chains:
+        foo_chain:
+            alias: some_alias
+            steps:
+                some_name: [arguments, go, here]
+```
+
+
+
 
 
 

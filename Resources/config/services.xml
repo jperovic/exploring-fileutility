@@ -9,6 +9,10 @@
         <parameter key="exploring_file_utility.imageprocessor.class">Exploring\FileUtilityBundle\Service\Image\ImageProcessor</parameter>
         <parameter key="exploring_file_utility.imageengine_gd.class">Exploring\FileUtilityBundle\Service\Image\GDImageEngine</parameter>
         <parameter key="exploring_file_utility.imageengine_imagick.class">Exploring\FileUtilityBundle\Service\Image\ImagickImageEngine</parameter>
+        <parameter key="exploring_file_utility.image_chain_executor.class">Exploring\FileUtilityBundle\Service\Image\Chains\Executor</parameter>
+        <parameter key="exploring_file_utility.image_chain_step_crop.class">Exploring\FileUtilityBundle\Service\Image\Chains\Steps\CropChainStep</parameter>
+        <parameter key="exploring_file_utility.image_chain_step_scale.class">Exploring\FileUtilityBundle\Service\Image\Chains\Steps\ScaleChainStep</parameter>
+        <parameter key="exploring_file_utility.image_chain_step_scale_large_edge.class">Exploring\FileUtilityBundle\Service\Image\Chains\Steps\ScaleLargeEdgeChainStep</parameter>
     </parameters>
 
     <services>
@@ -29,6 +33,23 @@
         <service id="exploring_file_utility.imageengine_imagick"
                  class="%exploring_file_utility.imageengine_imagick.class%" public="false">
             <argument>%exploring_file_utility.image_engine.imagick.config%</argument>
+        </service>
+
+        <!-- Chains -->
+        <service id="exploring_file_utility.image_chain_executor" class="%exploring_file_utility.image_chain_executor.class%">
+            <argument>%exploring_file_utility.image_chains%</argument>
+        </service>
+
+        <service id="exploring_file_utility.image_chain_step_crop" class="%exploring_file_utility.image_chain_step_crop.class%">
+            <tag name="exploring_file_utility.image_chain_step"/>
+        </service>
+
+        <service id="exploring_file_utility.image_chain_step_scale" class="%exploring_file_utility.image_chain_step_scale.class%">
+            <tag name="exploring_file_utility.image_chain_step"/>
+        </service>
+
+        <service id="exploring_file_utility.image_chain_step_scale_large_edge" class="%exploring_file_utility.image_chain_step_scale_large_edge.class%">
+            <tag name="exploring_file_utility.image_chain_step"/>
         </service>
     </services>
 </container>
