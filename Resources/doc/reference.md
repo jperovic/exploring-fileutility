@@ -38,7 +38,7 @@ exploring_file_utility:
 
 > **`filename_generator`**
 
-> Service which generates unique filenames. You can define your own - please read the "Advanced" section of [readme document](README.md).
+> Service which generates unique filenames. You can define your own - please read the "Advanced" section of [readme document](/README.md).
 
 > **`image_engine`**
 
@@ -70,7 +70,7 @@ exploring_file_utility:
 
 > > Accepts two arguments: `width`, `height` and `enlarge` (boolean)
 
-> You can create your own chain steps as well. Please read the "Advanced" section of [readme document](README.md).
+> You can create your own chain steps as well. Please read the "Advanced" section of [readme document](/README.md).
 
 
 
