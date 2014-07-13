@@ -15,6 +15,11 @@
         /** @var ImageProcessor */
         protected $ip;
 
+        protected function tearDown()
+        {
+            $this->ip->rollback();
+        }
+
         public function testScale()
         {
             $pngFile = new File(__DIR__ . '/Resources/tomask.png');

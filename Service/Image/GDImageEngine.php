@@ -54,6 +54,7 @@
             $height = imagesy($image);
 
             $newPicture = imagecreatetruecolor($width, $height);
+            imagealphablending($newPicture, false);
             imagesavealpha($newPicture, true);
             imagefill($newPicture, 0, 0, imagecolorallocatealpha($newPicture, 0, 0, 0, 127));
 
@@ -155,6 +156,8 @@
             $destination = $this->fileManager->getAbsolutePath($scaledFileName, $saveToAlias);
 
             $newImage = imagecreatetruecolor($width, $height);
+            imagealphablending($newImage, false);
+            imagesavealpha($newImage, true);
             imagecopyresampled($newImage, $Image, 0, 0, 0, 0, $width, $height, $w, $h);
             imagedestroy($Image);
 
@@ -195,6 +198,8 @@
             $destination = $this->fileManager->getAbsolutePath($newFileName, $saveToAlias);
 
             $newImage = imagecreatetruecolor($width, $height);
+            imagealphablending($newImage, false);
+            imagesavealpha($newImage, true);
             imagecopyresampled($newImage, $image, 0, 0, $x, $y, $width, $height, $width, $height);
             imagedestroy($image);
 
