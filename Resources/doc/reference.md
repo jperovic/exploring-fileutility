@@ -51,8 +51,8 @@ exploring_file_utility:
 
 > **`chains`**
 
-> List of all image operation chains. Each chain can have an optional `alias`, which ca be overriden when invoking the chain execution.
-> Image chain consists of step being performed when source file is offered. You can use use built-in steps:
+> List of all image operation chains. Each chain can have an optional `alias`, which can be overriden when invoking the chain execution.
+> Image chain consists of steps being performed upon source file offered. You can use the following built-in steps:
 
 > > **`clip`**
 
@@ -71,8 +71,3 @@ exploring_file_utility:
 > > Accepts two arguments: `width`, `height` and `enlarge` (boolean)
 
 > You can create your own chain steps as well. Please read the "Advanced" section of [readme document](/README.md).
-
-
-
-
-
