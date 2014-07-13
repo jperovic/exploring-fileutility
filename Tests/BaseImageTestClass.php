@@ -1,8 +1,11 @@
 <?php
     namespace Exploring\FileUtilityBundle\Tests;
 
-    use Exploring\FileUtilityBundle\Service\File\FileManager;
-    use Exploring\FileUtilityBundle\Service\Image\GDImageEngine;
+    use Exploring\FileUtilityBundle\Service\Image\Chains\Executor;
+    use Exploring\FileUtilityBundle\Service\Image\Chains\Steps\ClipChainStep;
+    use Exploring\FileUtilityBundle\Service\Image\Chains\Steps\CropChainStep;
+    use Exploring\FileUtilityBundle\Service\Image\Chains\Steps\ScaleChainStep;
+    use Exploring\FileUtilityBundle\Service\Image\Chains\Steps\ScaleLargeEdgeChainStep;
     use Exploring\FileUtilityBundle\Service\Image\ImageProcessor;
     use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
     use Symfony\Component\HttpFoundation\File\File;
@@ -12,20 +15,11 @@
         /** @var ImageProcessor */
         protected $ip;
 
-        /**
-         * {@inheritDoc}
-         */
-        public function setUp()
-        {
-            $fm = new FileManager(array('t' => 'temp'), __DIR__ . '/Resources/');
-            $this->ip = new ImageProcessor($fm, new GDImageEngine());
-        }
-
         public function testScale()
         {
             $pngFile = new File(__DIR__ . '/Resources/tomask.png');
 
-            $wrap = $this->ip->scale($pngFile, 't', 120, 0);
+            $wrap = $this->ip->scale($pngFile, 't', 120, 0, true, true);
 
             $size = $this->ip->getImageSize($wrap->getFile()->getRealPath());
 
@@ -37,7 +31,7 @@
         {
             $pngFile = new File(__DIR__ . '/Resources/tomask.png');
 
-            $wrap = $this->ip->scaleLargeEdge($pngFile, 't', 120);
+            $wrap = $this->ip->scaleLargeEdge($pngFile, 't', 120, true, true);
 
             $size = $this->ip->getImageSize($wrap->getFile()->getRealPath());
             $this->assertEquals(120, $size['width']);
@@ -48,7 +42,7 @@
             $pngFile = new File(__DIR__ . '/Resources/tomask.png');
             $maskFile = new File(__DIR__ . '/Resources/mask.png');
 
-            $wrap = $this->ip->clip($pngFile, 't', $maskFile);
+            $wrap = $this->ip->clip($pngFile, 't', $maskFile, true);
 
             $this->assertTrue(file_exists($wrap->getFile()->getRealPath()));
         }
@@ -62,6 +56,37 @@
             $size = $this->ip->getImageSize($wrap->getFile()->getRealPath());
             $this->assertEquals(100, $size['width']);
             $this->assertEquals(100, $size['height']);
+        }
+
+        public function testImageChain(){
+            $pngFile = new File(__DIR__ . '/Resources/tomask.png');
+
+            $wrap = $this->ip->applyChain($pngFile, 'foo');
+
+            $this->assertEquals(50, $wrap->getWidth());
+            $this->assertEquals(50, $wrap->getHeight());
+        }
+
+
+        ##########################
+        # COMMON METHODS
+        ##########################
+
+        /**
+         * @return Executor
+         */
+        protected function getChainExec(){
+            $chainDef = array(
+                'foo' => array(
+                    'alias' => 't',
+                    'steps' => array(
+                        'large_edge' => array(500),
+                        'clip' => array(__DIR__ . '/Resources/mask.png'),
+                        'crop' => array(0, 0, 50, 50)
+                    )
+                )
+            );
+            return new Executor($chainDef, array(new ClipChainStep(), new CropChainStep(), new ScaleLargeEdgeChainStep(), new ScaleChainStep()));
         }
     }
  

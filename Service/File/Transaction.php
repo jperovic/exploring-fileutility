@@ -28,12 +28,12 @@
          * @param File   $file
          * @param string $saveToAlias
          * @param bool   $isTemporary
-         * @param bool   $keepOriginal
+         * @param bool   $keepSourceFile
          *
          * @throws FileManagerException
          * @return FileWrapper
          */
-        function save(File $file, $saveToAlias, $isTemporary = false, $keepOriginal = false)
+        function save(File $file, $saveToAlias, $isTemporary = false, $keepSourceFile = false)
         {
             $target = $this->manager->resolveDirectoryAlias($saveToAlias);
 
@@ -50,7 +50,7 @@
 
                 $newRealPath = $target . $newFileName;
 
-                if ($keepOriginal) {
+                if ($keepSourceFile) {
                     if ($isTemporary && array_key_exists($file->getFilename(), $this->temporaryFiles)) {
                         $newRealPath = $this->temporaryFiles[$file->getFilename()];
                     } else {

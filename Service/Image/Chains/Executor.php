@@ -1,6 +1,7 @@
 <?php
     namespace Exploring\FileUtilityBundle\Service\Image\Chains;
 
+    use Exploring\FileUtilityBundle\Data\ImageWrapper;
     use Exploring\FileUtilityBundle\Service\Image\Chains\Steps\ChainStepInterface;
     use Exploring\FileUtilityBundle\Service\Image\ImageProcessor;
     use Exploring\FileUtilityBundle\Service\Image\ImageProcessorException;
@@ -17,7 +18,7 @@
         private $chainStepsMapping;
 
         /**
-         * @param array               $registeredChains
+         * @param array                $registeredChains
          * @param ChainStepInterface[] $chainStepsMapping
          */
         function __construct(array $registeredChains, $chainStepsMapping)
@@ -39,6 +40,14 @@
             $this->processor = $processor;
         }
 
+        /**
+         * @param File        $file
+         * @param string      $chainName
+         * @param string|null $saveToAlias
+         *
+         * @return ImageWrapper
+         * @throws ImageProcessorException
+         */
         public function execute(File $file, $chainName, $saveToAlias = null)
         {
             if (!array_key_exists($chainName, $this->registeredChains)) {
@@ -64,7 +73,10 @@
 
             foreach ($stepsDefs as $stepName => $stepArgs) {
                 if (!array_key_exists($stepName, $this->chainStepsMapping)) {
-                    throw new ImageProcessorException(sprintf('Unknown chain step name "%s". Did you tag it properly?', $stepName));
+                    throw new ImageProcessorException(sprintf(
+                        'Unknown chain step name "%s". Did you tag it properly?',
+                        $stepName
+                    ));
                 }
 
                 $wrapper = $this->chainStepsMapping[$stepName]->execute($this->processor, $wrapper, $saveToAlias, $stepArgs);

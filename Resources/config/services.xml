@@ -13,6 +13,7 @@
         <parameter key="exploring_file_utility.image_chain_step_crop.class">Exploring\FileUtilityBundle\Service\Image\Chains\Steps\CropChainStep</parameter>
         <parameter key="exploring_file_utility.image_chain_step_scale.class">Exploring\FileUtilityBundle\Service\Image\Chains\Steps\ScaleChainStep</parameter>
         <parameter key="exploring_file_utility.image_chain_step_scale_large_edge.class">Exploring\FileUtilityBundle\Service\Image\Chains\Steps\ScaleLargeEdgeChainStep</parameter>
+        <parameter key="exploring_file_utility.image_chain_step_clip.class">Exploring\FileUtilityBundle\Service\Image\Chains\Steps\ClipChainStep</parameter>
     </parameters>
 
     <services>
@@ -49,6 +50,10 @@
         </service>
 
         <service id="exploring_file_utility.image_chain_step_scale_large_edge" class="%exploring_file_utility.image_chain_step_scale_large_edge.class%">
+            <tag name="exploring_file_utility.image_chain_step"/>
+        </service>
+
+        <service id="exploring_file_utility.image_chain_step_clip" class="%exploring_file_utility.image_chain_step_clip.class%">
             <tag name="exploring_file_utility.image_chain_step"/>
         </service>
     </services>

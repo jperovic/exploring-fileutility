@@ -1,11 +1,4 @@
 <?php
-    /**
-     * Created by PhpStorm.
-     * User: jovan
-     * Date: 12/9/13
-     * Time: 11:02 PM
-     */
-
     namespace Exploring\FileUtilityBundle\Tests;
 
     use Exploring\FileUtilityBundle\Service\File\FileManager;

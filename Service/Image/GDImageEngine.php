@@ -20,15 +20,17 @@
          * @param File   $file
          * @param string $saveToAlias
          * @param File   $maskFile
-         * @param bool   $keepOriginal
+         * @param bool   $keepSourceFile
          *
          * @throws ImageProcessorException
+         * @internal param bool $isTemporary
+         *
          * @return FileWrapper
          */
-        public function clip(File $file, $saveToAlias, File $maskFile, $keepOriginal = false)
+        public function clip(File $file, $saveToAlias, File $maskFile, $keepSourceFile = false)
         {
             if ($file instanceof UploadedFile) {
-                $entry = $this->fileManager->save($file, $saveToAlias, true, $keepOriginal);
+                $entry = $this->fileManager->save($file, $saveToAlias, true, $keepSourceFile);
                 $file = $entry->getFile();
             }
 
@@ -88,6 +90,10 @@
 
             @imagepng($newPicture, $destination, 9);
 
+            if (!$keepSourceFile) {
+                $this->removeSourceFile($file);
+            }
+
             return new ImageWrapper($this->fileManager->save(new File($destination), $saveToAlias), $width, $height);
         }
 
@@ -97,15 +103,17 @@
          * @param int    $width
          * @param int    $height
          * @param bool   $enlarge
-         * @param bool   $keepOriginal
+         * @param bool   $keepSourceFile
          *
          * @throws ImageProcessorException
+         * @internal param bool $isTemporary
+         *
          * @return FileWrapper
          */
-        public function scale(File $file, $saveToAlias, $width, $height = 0, $enlarge = true, $keepOriginal = false)
+        public function scale(File $file, $saveToAlias, $width, $height = 0, $enlarge = true, $keepSourceFile = false)
         {
             if ($file instanceof UploadedFile) {
-                $entry = $this->fileManager->save($file, $saveToAlias, true, $keepOriginal);
+                $entry = $this->fileManager->save($file, $saveToAlias, true, $keepSourceFile);
                 $file = $entry->getFile();
             }
 
@@ -152,13 +160,17 @@
 
             $this->saveImageObject($newImage, $type, $destination);
 
+            if (!$keepSourceFile) {
+                $this->removeSourceFile($file);
+            }
+
             return new ImageWrapper($this->fileManager->save(new File($destination), $saveToAlias), $width, $height);
         }
 
-        public function crop(File $file, $saveToAlias, $x, $y, $width, $height, $keepOriginal = false)
+        public function crop(File $file, $saveToAlias, $x, $y, $width, $height, $keepSourceFile = false)
         {
             if ($file instanceof UploadedFile) {
-                $entry = $this->fileManager->save($file, $saveToAlias, true, $keepOriginal);
+                $entry = $this->fileManager->save($file, $saveToAlias, true, $keepSourceFile);
                 $file = $entry->getFile();
             }
 
@@ -187,6 +199,10 @@
             imagedestroy($image);
 
             $this->saveImageObject($newImage, $type, $destination);
+
+            if (!$keepSourceFile) {
+                $this->removeSourceFile($file);
+            }
 
             return new ImageWrapper($this->fileManager->save(new File($destination), $saveToAlias), $width, $height);
         }

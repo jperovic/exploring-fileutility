@@ -153,7 +153,7 @@ For list of available Imagick's compression methods see Imagick::COMPRESSION_* c
 Image chains
 ---
 
-If you plan to apply multiple operations over image file you may consider using image chains.
+If you plan to apply multiple operations over the single image file you may consider using image chains.
 Image chains are simply named list of operations, with joined arguments that will be executed.
 
 You can configure image chains like this:
@@ -192,12 +192,11 @@ $imageProcessor = $this->get('exploring_file_utility.imageprocessor');
 $result = $imageProcessor->applyChain($file, 'foo_chain');
 ```
 
-**Note:** The method `applyChain` also accepts third parameter `saveToAlias` in you would like to override the one configured in chain definition.
+**Note:** The method `applyChain` also accepts third parameter `saveToAlias` in case you want to override the one configured in chain definition.
 
 Build-in chain steps' names are: `crop`, `scale`, `large_edge` and `clip`.
 
-You can also make your-own chain step. Please see the "Advanced" section on the bottom of this document.
-
+You can also make your own chain step. Please see the "Advanced" section on the bottom of this document.
 
 Recepies
 ---
@@ -299,8 +298,8 @@ Notice the call:
 $thumb = $imageProcessor->scale($file, 'alias1', 120, 0, false, true);
 ```
 
-The last argument `true` means `keepOriginal`.
-Since you are creating multiple images out the single one (`$file` variable) it is essential to set this to `true` in order to keep original file intact.
+The last argument `true` means `keepSourceFile`.
+Since you are creating multiple images out the single one (`$file` variable) it is essential to set this to `true` in order to keep file source intact.
 
 
 6. Scale the image by it's larger edge (e.g. width for landscape images)

@@ -1,7 +1,7 @@
 <?php
     namespace Exploring\FileUtilityBundle\Service\Image;
 
-    use Exploring\FileUtilityBundle\Data\FileWrapper;
+    use Exploring\FileUtilityBundle\Data\ImageWrapper;
     use Exploring\FileUtilityBundle\Service\File\FileManager;
     use Symfony\Component\HttpFoundation\File\File;
 
@@ -16,31 +16,31 @@
          * @param File   $file
          * @param string $saveToAlias
          * @param File   $maskFile
-         * @param bool   $keepOriginal
+         * @param bool   $keepSourceFile
          *
-         * @return FileWrapper
+         * @return ImageWrapper
          */
-        public abstract function clip(File $file, $saveToAlias, File $maskFile, $keepOriginal = false);
+        public abstract function clip(File $file, $saveToAlias, File $maskFile, $keepSourceFile = false);
 
         /**
          * @param File   $file
          * @param string $saveToAlias
          * @param int    $size
          * @param bool   $enlarge
-         * @param bool   $keepOriginal
+         * @param bool   $keepSourceFile
          *
-         * @return string
+         * @return ImageWrapper
          */
-        public function scaleLargeEdge(File $file, $saveToAlias, $size, $enlarge = true, $keepOriginal = false)
+        public function scaleLargeEdge(File $file, $saveToAlias, $size, $enlarge = true, $keepSourceFile = false)
         {
             $dim = $this->getImageSize($file->getRealPath());
 
             $landscape = $dim['width'] > $dim['height'];
 
             if ($landscape) {
-                return $this->scale($file, $saveToAlias, $size, 0, $enlarge, $keepOriginal);
+                return $this->scale($file, $saveToAlias, $size, 0, $enlarge, $keepSourceFile);
             } else {
-                return $this->scale($file, $saveToAlias, 0, $size, $enlarge, $keepOriginal);
+                return $this->scale($file, $saveToAlias, 0, $size, $enlarge, $keepSourceFile);
             }
         }
 
@@ -57,11 +57,11 @@
          * @param int    $width
          * @param int    $height
          * @param bool   $enlarge
-         * @param bool   $keepOriginal
+         * @param bool   $keepSourceFile
          *
-         * @return FileWrapper
+         * @return ImageWrapper
          */
-        public abstract function scale(File $file, $saveToAlias, $width, $height = 0, $enlarge = true, $keepOriginal = false);
+        public abstract function scale(File $file, $saveToAlias, $width, $height = 0, $enlarge = true, $keepSourceFile = false);
 
         /**
          * @param File   $file
@@ -70,11 +70,11 @@
          * @param int    $y
          * @param int    $width
          * @param int    $height
-         * @param bool   $keepOriginal
+         * @param bool   $keepSourceFile
          *
-         * @return mixed
+         * @return ImageWrapper
          */
-        public abstract function crop(File $file, $saveToAlias, $x, $y, $width, $height, $keepOriginal = false);
+        public abstract function crop(File $file, $saveToAlias, $x, $y, $width, $height, $keepSourceFile = false);
 
         /**
          * @param FileManager $fileManager
@@ -121,5 +121,11 @@
                 );
                 throw new ImageProcessorException($error);
             }
+        }
+
+        protected function removeSourceFile(File $file)
+        {
+            $directoryAlias = $this->fileManager->guessDirectoryAliasOfFile($file);
+            $this->fileManager->remove($file->getFilename(), $directoryAlias);
         }
     }

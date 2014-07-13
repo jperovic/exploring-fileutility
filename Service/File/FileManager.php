@@ -100,13 +100,13 @@
          * @param File   $file
          * @param string $saveToAlias
          * @param bool   $temp
-         * @param bool   $keepOriginal
+         * @param bool   $keepSourceFile
          *
          * @return FileWrapper
          */
-        public function save(File $file, $saveToAlias, $temp = false, $keepOriginal = false)
+        public function save(File $file, $saveToAlias, $temp = false, $keepSourceFile = false)
         {
-            return $this->getTransaction()->save($file, $saveToAlias, $temp, $keepOriginal);
+            return $this->getTransaction()->save($file, $saveToAlias, $temp, $keepSourceFile);
         }
 
         /**

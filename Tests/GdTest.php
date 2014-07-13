@@ -10,7 +10,12 @@
     {
         public function setUp()
         {
-            $fm = new FileManager(array('t' => 'temp'), __DIR__ . '/Resources/');
-            $this->ip = new ImageProcessor($fm, new GDImageEngine(array('quality' => array('jpeg' => 75, 'png' => 7))));
+            $fm = new FileManager(array('t' => 'temp', 'd' => ''), __DIR__ . '/Resources/');
+            $this->ip = new ImageProcessor($fm, new GDImageEngine(array(
+                'quality' => array(
+                    'jpeg' => 75,
+                    'png'  => 7
+                )
+            )), $this->getChainExec());
         }
     }
