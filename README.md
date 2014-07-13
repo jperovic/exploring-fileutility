@@ -47,7 +47,7 @@ exploring_file_utility:
     upload_root: %kernel.root_dir%/../web/uploads
 ```
 
-You can find full configuration reference here.
+You can read full [configuration reference here](Resources/doc/reference.md).
 
 The idea behind file management **is not to upload the file to some absolute/relative path but to upload it to the directory alias**.
 Think of an alias as a symbolic link (or shortcut). During the runtime the value of alias is appended to `upload_root`, forming the absolute path.

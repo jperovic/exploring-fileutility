@@ -67,7 +67,6 @@
             $this->assertEquals(50, $wrap->getHeight());
         }
 
-
         ##########################
         # COMMON METHODS
         ##########################
