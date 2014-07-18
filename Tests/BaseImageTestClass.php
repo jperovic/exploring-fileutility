@@ -68,8 +68,8 @@
 
             $wrap = $this->ip->applyChain($pngFile, 'foo');
 
-            $this->assertEquals(50, $wrap->getWidth());
-            $this->assertEquals(50, $wrap->getHeight());
+            $this->assertEquals(500, $wrap->getWidth());
+            $this->assertEquals(100, $wrap->getHeight());
         }
 
         ##########################
@@ -86,7 +86,7 @@
                     'steps' => array(
                         'large_edge' => array(500),
                         'clip' => array(__DIR__ . '/Resources/mask.png'),
-                        'crop' => array(0, 0, 50, 50)
+                        'crop' => array(0, 0, 500, 100)
                     )
                 )
             );

@@ -39,11 +39,9 @@
             $sourceSize = $source->getimagegeometry();
             $source->setimagecompression($this->configuration['compression']);
             $source->setimagecompressionquality($this->configuration['quality']);
+            $source->setImageMatte(true);
             $mask = new Imagick($maskFile->getRealPath());
             $maskSize = $mask->getimagegeometry();
-
-            // IMPORTANT! Must activate the opacity channel
-            $source->setImageMatte(1);
 
             // Create composite of two images using DSTIN
             $source->compositeImage($mask, Imagick::COMPOSITE_DSTIN, 0, 0);
@@ -54,7 +52,6 @@
             $this->assertGeneratedName($newFileName, 'createMasked');
 
             $destination = $this->fileManager->getAbsolutePath($newFileName, $saveToAlias);
-
 
             // Write image to a file.
             $source->writeImage($destination);
@@ -90,6 +87,7 @@
             }
 
             $source = new Imagick($file->getRealPath());
+            $source->setImageMatte(true);
             $source->setimagecompression($this->configuration['compression']);
             $source->setimagecompressionquality($this->configuration['quality']);
             $size = $source->getimagegeometry();
@@ -168,9 +166,10 @@
             }
 
             $source = new Imagick($file->getRealPath());
+            $source->setImageMatte(true);
             $source->setimagecompression($this->configuration['compression']);
             $source->setimagecompressionquality($this->configuration['quality']);
-            $source->cropimage($width, $width, $x, $y);
+            $source->cropimage($width, $height, $x, $y);
 
             $newFileName = $this->fileManager->getFilenameGenerator()->createScaled(
                                              $file->getFilename(),
