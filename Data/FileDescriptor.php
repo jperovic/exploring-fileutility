@@ -3,7 +3,7 @@
 
     use Symfony\Component\HttpFoundation\File\File;
 
-    class FileWrapper
+    class FileDescriptor
     {
         /**
          * @var File
