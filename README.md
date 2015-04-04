@@ -1,3 +1,5 @@
+*** DEPRECATED DOCUMENTATION. CHANGES PENDING... ***
+
 FileUtilityBundle
 =============
 
