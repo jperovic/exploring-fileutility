@@ -17,11 +17,7 @@
     </parameters>
 
     <services>
-        <service id="exploring_file_utility.manager" class="%exploring_file_utility.manager.class%">
-            <argument type="string">%exploring_file_utility.directories%</argument>
-            <argument type="string">%exploring_file_utility.upload_root%</argument>
-            <argument type="string">%exploring_file_utility.filename_generator%</argument>
-        </service>
+        <service id="exploring_file_utility.manager" class="%exploring_file_utility.manager.class%"/>
 
         <service id="exploring_file_utility.imageprocessor" class="%exploring_file_utility.imageprocessor.class%">
         </service>

@@ -11,7 +11,7 @@
         /**
          * {@inheritdoc}
          */
-        public function generateRandom(File $file, $temp = false)
+        public function generateRandom(File $file, $temp = FALSE)
         {
             $ext = $file->guessExtension();
 
@@ -27,12 +27,10 @@
 
             $dotIndex = strrpos($filename, '.');
 
-            if ($dotIndex !== false) {
-                return substr($filename, 0, $dotIndex) . '_' . self::MASK_SUFFIX . '.' . substr(
-                    $filename,
-                    $dotIndex + 1
-                );
-            } else {
+            if ( $dotIndex !== FALSE ) {
+                return substr($filename, 0, $dotIndex) . '_' . self::MASK_SUFFIX . '.' . substr($filename, $dotIndex + 1);
+            }
+            else {
                 return $filename . '_' . self::MASK_SUFFIX;
             }
         }
@@ -46,24 +44,21 @@
 
             $dotIndex = strrpos($filename, '.');
 
-            if ($dotIndex !== false) {
-                return sprintf(
-                    "%s_%dx%d.%s",
-                    substr($filename, 0, $dotIndex),
-                    $width,
-                    $height,
-                    substr($filename, $dotIndex + 1)
-                );
-            } else {
+            if ( $dotIndex !== FALSE ) {
+                return sprintf("%s_%dx%d.%s", substr($filename, 0, $dotIndex), $width, $height, substr($filename, $dotIndex + 1));
+            }
+            else {
                 return sprintf("%s_%dx%d", $filename, $width, $height);
             }
         }
 
+        /**
+         * @param $filename
+         *
+         * @return string
+         */
         private function stripTempPrefix($filename)
         {
-            return strpos($filename, self::TEMP_PREFIX) === 0 ? $filename = substr(
-                $filename,
-                strlen(self::TEMP_PREFIX)
-            ) : $filename;
+            return strpos($filename, self::TEMP_PREFIX) === 0 ? $filename = substr($filename, strlen(self::TEMP_PREFIX)) : $filename;
         }
     }

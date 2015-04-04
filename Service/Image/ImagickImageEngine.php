@@ -1,7 +1,7 @@
 <?php
     namespace Exploring\FileUtilityBundle\Service\Image;
 
-    use Exploring\FileUtilityBundle\Data\ImageWrapper;
+    use Exploring\FileUtilityBundle\Data\ImageDescriptor;
     use Imagick;
     use Symfony\Component\HttpFoundation\File\File;
     use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -10,9 +10,14 @@
     {
         private $configuration;
 
+        /**
+         * @param array $configuration
+         *
+         * @throws ImageProcessorException
+         */
         function __construct(array $configuration)
         {
-            if (!class_exists("Imagick")) {
+            if ( !class_exists("Imagick") ) {
                 throw new ImageProcessorException("Imagick library class was not found. Did you forget to install it?", 500);
             }
 
@@ -21,16 +26,16 @@
 
         /**
          * @param File   $file
-         * @param string $saveToAlias
+         * @param string $directory
          * @param File   $maskFile
          * @param bool   $keepSourceFile
          *
-         * @return ImageWrapper
+         * @return ImageDescriptor
          */
-        public function clip(File $file, $saveToAlias, File $maskFile, $keepSourceFile = false)
+        public function clip(File $file, $directory, File $maskFile, $keepSourceFile = FALSE)
         {
-            if ($file instanceof UploadedFile) {
-                $entry = $this->fileManager->save($file, $saveToAlias, true, $keepSourceFile);
+            if ( $file instanceof UploadedFile ) {
+                $entry = $this->fileManager->save($file, $directory, TRUE, $keepSourceFile);
                 $file = $entry->getFile();
             }
 
@@ -39,7 +44,7 @@
             $sourceSize = $source->getimagegeometry();
             $source->setimagecompression($this->configuration['compression']);
             $source->setimagecompressionquality($this->configuration['quality']);
-            $source->setImageMatte(true);
+            $source->setImageMatte(TRUE);
             $mask = new Imagick($maskFile->getRealPath());
             $maskSize = $mask->getimagegeometry();
 
@@ -49,9 +54,9 @@
 
             $newFileName = $this->fileManager->getFilenameGenerator()->createMasked($file->getFilename());
 
-            $this->assertGeneratedName($newFileName, 'createMasked');
+            self::assertGeneratedName($newFileName, 'createMasked');
 
-            $destination = $this->fileManager->getAbsolutePath($newFileName, $saveToAlias);
+            $destination = $this->fileManager->getAbsolutePath($newFileName, $directory);
 
             // Write image to a file.
             $source->writeImage($destination);
@@ -59,35 +64,35 @@
             $source->destroy();
             $mask->destroy();
 
-            if (!$keepSourceFile) {
+            if ( !$keepSourceFile ) {
                 $this->removeSourceFile($file);
             }
 
-            return new ImageWrapper($this->fileManager->save(
-                                                      new File($destination),
-                                                          $saveToAlias
+            return new ImageDescriptor($this->fileManager->save(
+                new File($destination),
+                $directory
             ), $sourceSize['width'], $sourceSize['height']);
         }
 
         /**
          * @param File   $file
-         * @param string $saveToAlias
+         * @param string $directory
          * @param int    $width
          * @param int    $height
          * @param bool   $enlarge
          * @param bool   $keepSourceFile
          *
-         * @return ImageWrapper
+         * @return ImageDescriptor
          */
-        public function scale(File $file, $saveToAlias, $width, $height = 0, $enlarge = true, $keepSourceFile = false)
+        public function scale(File $file, $directory, $width, $height = 0, $enlarge = TRUE, $keepSourceFile = FALSE)
         {
-            if ($file instanceof UploadedFile) {
-                $entry = $this->fileManager->save($file, $saveToAlias, true, $keepSourceFile);
+            if ( $file instanceof UploadedFile ) {
+                $entry = $this->fileManager->save($file, $directory, TRUE, $keepSourceFile);
                 $file = $entry->getFile();
             }
 
             $source = new Imagick($file->getRealPath());
-            $source->setImageMatte(true);
+            $source->setImageMatte(TRUE);
             $source->setimagecompression($this->configuration['compression']);
             $source->setimagecompressionquality($this->configuration['quality']);
             $size = $source->getimagegeometry();
@@ -97,14 +102,15 @@
             $isLandscape = $w > $h;
             $ratio = $isLandscape ? $w / $h : $h / $w;
 
-            if ($width == 0) {
-                if ($height > $h && !$enlarge) {
+            if ( $width == 0 ) {
+                if ( $height > $h && !$enlarge ) {
                     $height = $h;
                 }
                 $width = $isLandscape ? $height * $ratio : $height / $ratio;
-            } else {
-                if ($height == 0) {
-                    if ($width > $w && !$enlarge) {
+            }
+            else {
+                if ( $height == 0 ) {
+                    if ( $width > $w && !$enlarge ) {
                         $width = $w;
                     }
                     $height = $isLandscape ? $width / $ratio : $width * $ratio;
@@ -113,24 +119,22 @@
 
             $source->scaleimage($width, $height);
 
-            $newFileName = $this->fileManager->getFilenameGenerator()->createScaled(
-                                             $file->getFilename(),
-                                                 $width,
-                                                 $height
-            );
+            $newFileName = $this->fileManager
+                ->getFilenameGenerator()
+                ->createScaled($file->getFilename(), $width, $height);
 
-            $this->assertGeneratedName($newFileName, 'createScaled');
+            self::assertGeneratedName($newFileName, 'createScaled');
 
-            $destination = $this->fileManager->getAbsolutePath($newFileName, $saveToAlias);
+            $destination = $this->fileManager->getAbsolutePath($newFileName, $directory);
 
             $source->writeimage($destination);
             $source->destroy();
 
-            if (!$keepSourceFile) {
+            if ( !$keepSourceFile ) {
                 $this->removeSourceFile($file);
             }
 
-            return new ImageWrapper($this->fileManager->save(new File($destination), $saveToAlias), $width, $height);
+            return new ImageDescriptor($this->fileManager->save(new File($destination), $directory), $width, $height);
         }
 
         /**
@@ -149,48 +153,45 @@
 
         /**
          * @param File   $file
-         * @param string $saveToAlias
+         * @param string $directory
          * @param int    $x
          * @param int    $y
          * @param int    $width
          * @param int    $height
          * @param bool   $keepSourceFile
          *
-         * @return ImageWrapper
+         * @return ImageDescriptor
          */
-        public function crop(File $file, $saveToAlias, $x, $y, $width, $height, $keepSourceFile = false)
+        public function crop(File $file, $directory, $x, $y, $width, $height, $keepSourceFile = FALSE)
         {
-            if ($file instanceof UploadedFile) {
-                $entry = $this->fileManager->save($file, $saveToAlias, true, $keepSourceFile);
+            if ( $file instanceof UploadedFile ) {
+                $entry = $this->fileManager->save($file, $directory, TRUE, $keepSourceFile);
                 $file = $entry->getFile();
             }
 
             $source = new Imagick($file->getRealPath());
-            $source->setImageMatte(true);
+            $source->setImageMatte(TRUE);
             $source->setimagecompression($this->configuration['compression']);
             $source->setimagecompressionquality($this->configuration['quality']);
             $source->cropimage($width, $height, $x, $y);
 
             $newFileName = $this->fileManager->getFilenameGenerator()->createScaled(
-                                             $file->getFilename(),
-                                                 $width,
-                                                 $height
+                $file->getFilename(),
+                $width,
+                $height
             );
 
-            $this->assertGeneratedName($newFileName, 'createScaled');
+            self::assertGeneratedName($newFileName, 'createScaled');
 
-            $destination = $this->fileManager->getAbsolutePath($newFileName, $saveToAlias);
+            $destination = $this->fileManager->getAbsolutePath($newFileName, $directory);
 
             $source->writeimage($destination);
             $source->destroy();
 
-            if (!$keepSourceFile) {
+            if ( !$keepSourceFile ) {
                 $this->removeSourceFile($file);
             }
 
-            return new ImageWrapper($this->fileManager->save(
-                                                      new File($destination),
-                                                          $saveToAlias
-            ), $width, $height);
+            return new ImageDescriptor($this->fileManager->save(new File($destination), $directory), $width, $height);
         }
     }

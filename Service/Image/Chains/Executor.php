@@ -1,7 +1,7 @@
 <?php
     namespace Exploring\FileUtilityBundle\Service\Image\Chains;
 
-    use Exploring\FileUtilityBundle\Data\ImageWrapper;
+    use Exploring\FileUtilityBundle\Data\ImageDescriptor;
     use Exploring\FileUtilityBundle\Service\Image\Chains\Steps\ChainStepInterface;
     use Exploring\FileUtilityBundle\Service\Image\ImageProcessor;
     use Exploring\FileUtilityBundle\Service\Image\ImageProcessorException;
@@ -25,8 +25,8 @@
         {
             $this->registeredChains = $registeredChains;
 
-            if ($chainStepsMapping) {
-                foreach ($chainStepsMapping as $step) {
+            if ( $chainStepsMapping ) {
+                foreach ( $chainStepsMapping as $step ) {
                     $this->chainStepsMapping[$step->getName()] = $step;
                 }
             }
@@ -43,43 +43,37 @@
         /**
          * @param File        $file
          * @param string      $chainName
-         * @param string|null $saveToAlias
+         * @param string|null $directory
          *
-         * @return ImageWrapper
+         * @return ImageDescriptor
          * @throws ImageProcessorException
          */
-        public function execute(File $file, $chainName, $saveToAlias = null)
+        public function execute(File $file, $chainName, $directory = NULL)
         {
-            if (!array_key_exists($chainName, $this->registeredChains)) {
-                throw new ImageProcessorException(sprintf('Given chain "%s" was not defined.', $chainName));
+            if ( !array_key_exists($chainName, $this->registeredChains) ) {
+                throw new ImageProcessorException("Given chain \"$chainName\" was not defined.");
             }
 
             $chain = $this->registeredChains[$chainName];
 
-            if ($saveToAlias == null) {
-                if (!$chain['alias']) {
-                    throw new ImageProcessorException(sprintf(
-                        'Directory alias not specified for chain execution "%s". Either specify it within configuration or in invocation.',
-                        $chainName
-                    ));
+            if ( $directory == NULL ) {
+                if ( !$chain['directory'] ) {
+                    throw new ImageProcessorException("Directory not specified for chain execution \"$chainName\". Either specify it within configuration or in invocation.");
                 }
 
-                $saveToAlias = $chain['alias'];
+                $directory = $chain['directory'];
             }
 
             $stepsDefs = $chain['steps'];
 
-            $wrapper = $this->processor->getFileManager()->save($file, $saveToAlias, true, true);
+            $wrapper = $this->processor->getFileManager()->save($file, $directory, TRUE, TRUE);
 
-            foreach ($stepsDefs as $stepName => $stepArgs) {
-                if (!array_key_exists($stepName, $this->chainStepsMapping)) {
-                    throw new ImageProcessorException(sprintf(
-                        'Unknown chain step name "%s". Did you tag it properly?',
-                        $stepName
-                    ));
+            foreach ( $stepsDefs as $stepName => $stepArgs ) {
+                if ( !array_key_exists($stepName, $this->chainStepsMapping) ) {
+                    throw new ImageProcessorException("Unknown chain step name \"$stepName\". Did you tag it properly?");
                 }
 
-                $wrapper = $this->chainStepsMapping[$stepName]->execute($this->processor, $wrapper, $saveToAlias, $stepArgs);
+                $wrapper = $this->chainStepsMapping[$stepName]->execute($this->processor, $wrapper, $directory, $stepArgs);
             }
 
             return $wrapper;

@@ -24,7 +24,7 @@
         {
             $pngFile = new File(__DIR__ . '/Resources/tomask.png');
 
-            $wrap = $this->ip->scale($pngFile, 't', 120, 0, true, true);
+            $wrap = $this->ip->scale($pngFile, 'temp', 120, 0, true, true);
 
             $size = $this->ip->getImageSize($wrap->getFile()->getRealPath());
 
@@ -36,7 +36,7 @@
         {
             $pngFile = new File(__DIR__ . '/Resources/tomask.png');
 
-            $wrap = $this->ip->scaleLargeEdge($pngFile, 't', 120, true, true);
+            $wrap = $this->ip->scaleLargeEdge($pngFile, 'temp', 120, true, true);
 
             $size = $this->ip->getImageSize($wrap->getFile()->getRealPath());
             $this->assertEquals(120, $size['width']);
@@ -47,7 +47,7 @@
             $pngFile = new File(__DIR__ . '/Resources/tomask.png');
             $maskFile = new File(__DIR__ . '/Resources/mask.png');
 
-            $wrap = $this->ip->clip($pngFile, 't', $maskFile, true);
+            $wrap = $this->ip->clip($pngFile, 'temp', $maskFile, true);
 
             $this->assertTrue(file_exists($wrap->getFile()->getRealPath()));
         }
@@ -56,7 +56,7 @@
         {
             $pngFile = new File(__DIR__ . '/Resources/tomask.png');
 
-            $wrap = $this->ip->crop($pngFile, 't', 0, 0, 100, 100, true);
+            $wrap = $this->ip->crop($pngFile, 'temp', 0, 0, 100, 100, true);
 
             $size = $this->ip->getImageSize($wrap->getFile()->getRealPath());
             $this->assertEquals(100, $size['width']);
@@ -82,7 +82,7 @@
         protected function getChainExec(){
             $chainDef = array(
                 'foo' => array(
-                    'alias' => 't',
+                    'directory' => 'temp',
                     'steps' => array(
                         'large_edge' => array(500),
                         'clip' => array(__DIR__ . '/Resources/mask.png'),

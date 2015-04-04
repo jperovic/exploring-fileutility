@@ -11,12 +11,16 @@
         private $action;
 
         /** @var mixed */
-        private $data;
+        private $payload;
 
-        function __construct($action, $data)
+        /**
+         * @param string $action
+         * @param mixed $payload
+         */
+        function __construct($action, $payload)
         {
             $this->action = $action;
-            $this->data = $data;
+            $this->payload = $payload;
         }
 
         /**
@@ -30,8 +34,8 @@
         /**
          * @return mixed
          */
-        public function getData()
+        public function getPayload()
         {
-            return $this->data;
+            return $this->payload;
         }
     }

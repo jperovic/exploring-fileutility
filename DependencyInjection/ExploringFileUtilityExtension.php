@@ -22,7 +22,6 @@
             $configuration = new Configuration();
             $config = $this->processConfiguration($configuration, $configs);
 
-            $container->setParameter('exploring_file_utility.directories', $config['directories']);
             $container->setParameter('exploring_file_utility.upload_root', $config['upload_root']);
             $container->setParameter('exploring_file_utility.filename_generator', $config['filename_generator']);
             $container->setParameter('exploring_file_utility.image_engine', $config['image_engine']);
