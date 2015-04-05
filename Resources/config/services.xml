@@ -14,6 +14,7 @@
         <parameter key="exploring_file_utility.image_chain_step_scale.class">Exploring\FileUtilityBundle\Service\Image\Chains\Steps\ScaleChainStep</parameter>
         <parameter key="exploring_file_utility.image_chain_step_scale_large_edge.class">Exploring\FileUtilityBundle\Service\Image\Chains\Steps\ScaleLargeEdgeChainStep</parameter>
         <parameter key="exploring_file_utility.image_chain_step_clip.class">Exploring\FileUtilityBundle\Service\Image\Chains\Steps\ClipChainStep</parameter>
+        <parameter key="exploring_file_utility.directory_names_cache_warmer.class">Exploring\FileUtilityBundle\Service\Cache\DirectoryNamesCacheWarmer</parameter>
     </parameters>
 
     <services>
@@ -52,6 +53,13 @@
 
         <service id="exploring_file_utility.image_chain_step_clip" class="%exploring_file_utility.image_chain_step_clip.class%">
             <tag name="exploring_file_utility.image_chain_step"/>
+        </service>
+
+        <service id="exploring_file_utility.directory_names_cache_warmer" class="%exploring_file_utility.directory_names_cache_warmer.class%">
+            <argument>%exploring_file_utility.upload_root%</argument>
+            <argument>%kernel.debug%</argument>
+            <argument type="service" id="logger"/>
+            <tag name="kernel.cache_warmer"/>
         </service>
     </services>
 </container>

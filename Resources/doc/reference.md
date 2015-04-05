@@ -3,13 +3,8 @@ Configuration Reference
 
 ```YAML
 exploring_file_utility:
-    directories:
-        alias1: 'relative_name_of_the_directory'
-        alias2: 'another_name_of_the_directory'
-        alias3: 'foo_directory'
-        ...
     upload_root: %kernel.root_dir%/../web/uploads
-    filename_generator: ~
+    filename_generator: generator.service.name
     image_engine: gd
     gd:
         quality:
@@ -28,9 +23,7 @@ exploring_file_utility:
         ...
 ```
 
-> **`exploring_file_utility.directories`**
-
-> List of all aliases defined. Value of alias is appended onto `upload_root` path, forming the absolute path.
+> Please note: Directory alias concept has been removed as of v2.0. Directories are now being dicovered automatically.
 
 > **`upload_root`**
 
@@ -38,7 +31,7 @@ exploring_file_utility:
 
 > **`filename_generator`**
 
-> Service which generates unique filenames. You can define your own - please read the "Advanced" section of [readme document](/README.md).
+> Service which generates filenames and is used when generating both random or scaled names. You can create your own - please read the "Advanced" [document](/Resources/doc/advances.md).
 
 > **`image_engine`**
 
@@ -70,4 +63,4 @@ exploring_file_utility:
 
 > > Accepts two arguments: `width`, `height` and `enlarge` (boolean)
 
-> You can create your own chain steps as well. Please read the "Advanced" section of [readme document](/README.md).
+> You can create your own chain steps as well. Please read the "Advanced" [document](/Resources/doc/advances.md).

@@ -213,13 +213,27 @@
         }
 
         /**
-         * @param FileDescriptor $file
+         * @param FileDescriptor|File $file
          *
+         * @throws \InvalidArgumentException
          * @return $this
          */
-        public function removeFile(FileDescriptor $file)
+        public function removeFile($file)
         {
-            return $this->remove($file->getFile()->getFilename(), $file->getDirectory());
+            if ( !$file instanceof FileDescriptor && $file instanceof File ) {
+                throw new \InvalidArgumentException(sprintf("Argument should be instance of Symfony\\Component\\HttpFoundation\\File or "
+                    . "Exploring\\FileUtilityBundle\\Data\\FileDescriptor. %s given.", gettype($file)));
+            }
+
+            if ( $file instanceof FileDescriptor ) {
+                return $this->remove($file->getFile()->getFilename(), $file->getDirectory());
+            }
+            else {
+                /** @var File $file */
+                $targetDirectory = $this->guessDirectoryOfFile($file);
+
+                return $this->remove($file->getFilename(), $targetDirectory);
+            }
         }
 
         /**
