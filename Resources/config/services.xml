@@ -17,10 +17,11 @@
     </parameters>
 
     <services>
+        <!-- Will compile service arguments -->
         <service id="exploring_file_utility.manager" class="%exploring_file_utility.manager.class%"/>
 
-        <service id="exploring_file_utility.imageprocessor" class="%exploring_file_utility.imageprocessor.class%">
-        </service>
+        <!-- Will compile service arguments -->
+        <service id="exploring_file_utility.imageprocessor" class="%exploring_file_utility.imageprocessor.class%"/>
 
         <service id="exploring_file_utility.imageengine_gd" class="%exploring_file_utility.imageengine_gd.class%"
                  public="false">

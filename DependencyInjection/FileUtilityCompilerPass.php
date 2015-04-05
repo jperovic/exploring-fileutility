@@ -29,9 +29,6 @@
                 }
             }
 
-            // Store it for a later use via service container
-//            $container->setParameter('exploring_file_utility.directories', $availableSubdirs);
-
             if ( $filenameGenerator ) {
                 $filenameGenerator = new Reference($container->getParameter(
                     "exploring_file_utility.filename_generator"
