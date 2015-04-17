@@ -66,7 +66,7 @@ $fileManager->commit();
 4. Using constants instead of string for directory names
 ---
 
-> Notice: This is Symfony2 cache warmup feature. It is available without using cache warm-up.
+> Notice: This is Symfony2 cache warmup feature. It is not available without using cache warm-up.
 
 > Notice: This feature has been added in v2.0.
 

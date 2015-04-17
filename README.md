@@ -48,7 +48,7 @@ All file are uploaded to a specific subdirectory of `upload_root` path. You can 
 
 You can read full [configuration reference here](Resources/doc/reference.md).
 
-> Notice: Directory "alias" has been removed in v2.0. Directories are now auto discovered during the warm up process. If you instantiate FileManager manually, you can still set available directories.
+> Notice: Concept of directory "alias" has been removed in v2.0. Directories are now auto discovered during the warm up process. If you instantiate FileManager manually, you can still set available directories.
 
 > Advice: Either keep your upload root diretory out of web public directory or ensure proper access rights to file stored there in order to avoid execution of files uploaded.
 
