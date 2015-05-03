@@ -29,13 +29,13 @@
          * @param AbstractImageEngine $engine
          * @param Executor            $chainExecutor
          */
-        function __construct(FileManager $fileManager, AbstractImageEngine $engine, Executor $chainExecutor = null)
+        function __construct(FileManager $fileManager, AbstractImageEngine $engine, Executor $chainExecutor = NULL)
         {
             $this->fileManager = $fileManager;
             $this->engine = $engine;
             $this->engine->setFileManager($fileManager);
             $this->chainExecutor = $chainExecutor;
-            if ( $chainExecutor ){
+            if ( $chainExecutor ) {
                 $this->chainExecutor->setProcessor($this);
             }
         }
@@ -48,7 +48,7 @@
          *
          * @return ImageDescriptor
          */
-        public function clip(File $file, $directory, File $maskFile, $keepSourceFile = false)
+        public function clip(File $file, $directory, File $maskFile, $keepSourceFile = FALSE)
         {
             return $this->engine->clip($file, $directory, $maskFile, $keepSourceFile);
         }
@@ -64,7 +64,7 @@
          *
          * @return mixed
          */
-        public function crop(File $file, $directory, $x, $y, $width, $height, $keepSourceFile = false)
+        public function crop(File $file, $directory, $x, $y, $width, $height, $keepSourceFile = FALSE)
         {
             return $this->engine->crop($file, $directory, $x, $y, $width, $height, $keepSourceFile);
         }
@@ -78,7 +78,7 @@
          *
          * @return FileDescriptor
          */
-        public function scaleLargeEdge(File $file, $directory, $size, $enlarge = true, $keepSourceFile = false)
+        public function scaleLargeEdge(File $file, $directory, $size, $enlarge = TRUE, $keepSourceFile = FALSE)
         {
             return $this->engine->scaleLargeEdge($file, $directory, $size, $enlarge, $keepSourceFile);
         }
@@ -103,7 +103,7 @@
          *
          * @return FileDescriptor
          */
-        public function scale(File $file, $directory, $width, $height = 0, $enlarge = true, $keepSourceFile = false)
+        public function scale(File $file, $directory, $width, $height = 0, $enlarge = TRUE, $keepSourceFile = FALSE)
         {
             return $this->engine->scale($file, $directory, $width, $height, $enlarge, $keepSourceFile);
         }
@@ -115,7 +115,7 @@
          *
          * @return ImageDescriptor
          */
-        public function applyChain(File $file, $chainName, $directory = null)
+        public function applyChain(File $file, $chainName, $directory = NULL)
         {
             return $this->chainExecutor->execute($file, $chainName, $directory);
         }
@@ -126,6 +126,20 @@
         public function getFileManager()
         {
             return $this->fileManager;
+        }
+
+        /**
+         * @param string $filename
+         * @param string $directory
+         *
+         * @return ImageDescriptor
+         */
+        public function getImage($filename, $directory)
+        {
+            $fileDescriptor = $this->fileManager->getFileDescriptor($filename, $directory);
+            $size = $this->getImageSize($fileDescriptor->getRealPath());
+
+            return new ImageDescriptor($fileDescriptor, $size['width'], $size['height']);
         }
 
         /**

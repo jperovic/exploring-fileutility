@@ -72,6 +72,17 @@
             $this->assertEquals(100, $wrap->getHeight());
         }
 
+        public function testGetImageDescriptor(){
+            $pngFile = new File(__DIR__ . '/Resources/tomask.png');
+
+            $wrap = $this->ip->scaleLargeEdge($pngFile, 'temp', 120, true, true);
+
+            $filename = $wrap->getFileName();
+
+            $descriptor = $this->ip->getImage($filename, 'temp');
+            $this->assertEquals(120, $descriptor->getWidth());
+        }
+
         ##########################
         # COMMON METHODS
         ##########################
