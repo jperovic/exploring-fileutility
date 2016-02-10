@@ -3,9 +3,10 @@
 
     use Monolog\Logger;
     use Symfony\Component\Config\ConfigCache;
-    use Symfony\Component\HttpKernel\CacheWarmer\CacheWarmer;
+    use Symfony\Component\HttpKernel\CacheClearer\CacheClearerInterface;
+    use Symfony\Component\HttpKernel\CacheWarmer\CacheWarmerInterface;
 
-    class DirectoryNamesCacheWarmer extends CacheWarmer
+    class DirectoryNamesCacheWarmer implements CacheWarmerInterface, CacheClearerInterface
     {
         /**
          * @var Logger
@@ -41,7 +42,7 @@
          */
         public function isOptional()
         {
-            return TRUE;
+            return FALSE;
         }
 
         /**
@@ -53,34 +54,51 @@
         {
             $classNamespace = __NAMESPACE__;
             $className = "FileUtilityDirectory";
+            $cachePath = __DIR__ . '/' . $className . '.php';
 
-            /** @var \DirectoryIterator[] $dirIterator */
-            $dirIterator = new \DirectoryIterator($this->uploadRoot);
+            $cache = new ConfigCache($cachePath, $this->debug);
 
-            $code = "<?php namespace $classNamespace {class $className{";
-
-            foreach ( $dirIterator as $dir ) {
-                if ( $dir->isDir() && !$dir->isDot() ) {
-                    $normalizedName = strtoupper(preg_replace("/([a-z])([A-Z0-9])|([0-9])([a-z])/", "$1_$2", $dir));
-
-                    // Constants cannot start with digit
-                    if ( preg_match('/^[0-9]/', $normalizedName) ) {
-                        $normalizedName = '_' . $normalizedName;
-                    }
-
-                    $code .= "const " . strtoupper($normalizedName) . "=\"$dir\";";
-                    $this->logger->debug("Found directory: " . $dir . "; normalized: $normalizedName");
-                }
-            }
-
-            $code .= "}}";
-
-            $cache = new ConfigCache(__DIR__ . '/' . $className . '.php', $this->debug);
             if ( !$cache->isFresh() ) {
+
+                /** @var \DirectoryIterator[] $dirIterator */
+                $dirIterator = new \DirectoryIterator($this->uploadRoot);
+
+                $code = "<?php namespace $classNamespace {class $className{";
+
+                foreach ( $dirIterator as $dir ) {
+                    if ( $dir->isDir() && !$dir->isDot() ) {
+                        $normalizedName = strtoupper(preg_replace("/([a-z])([A-Z0-9])|([0-9])([a-z])/", "$1_$2", $dir));
+
+                        // Constants cannot start with digit
+                        if ( preg_match('/^[0-9]/', $normalizedName) ) {
+                            $normalizedName = '_' . $normalizedName;
+                        }
+
+                        $code .= "const " . strtoupper($normalizedName) . "=\"$dir\";";
+                        $this->logger->debug("Found directory: " . $dir . "; normalized: $normalizedName");
+                    }
+                }
+
+                $code .= "}}";
+
                 $cache->write($code, NULL);
             }
 
             /** @noinspection PhpIncludeInspection */
-            require_once $cache;
+            require_once $cachePath;
+        }
+
+        /**
+         * Clears any caches necessary.
+         *
+         * @param string $cacheDir The cache directory.
+         */
+        public function clear($cacheDir)
+        {
+            $cachePath = __DIR__ . '/FileUtilityDirectory.php';
+
+            if ( is_file($cachePath) ) {
+                unlink($cachePath);
+            }
         }
     }

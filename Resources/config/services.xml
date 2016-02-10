@@ -60,6 +60,7 @@
             <argument>%kernel.debug%</argument>
             <argument type="service" id="logger"/>
             <tag name="kernel.cache_warmer"/>
+            <tag name="kernel.cache_clearer"/>
         </service>
     </services>
 </container>
