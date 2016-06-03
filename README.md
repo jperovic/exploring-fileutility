@@ -1,6 +1,8 @@
 FileUtilityBundle
 =============
 
+-
+
 This bundle aims to help management of files that were sent thought the form.
 
 Symfony2 does a great job with converting raw file data into UploadedFile object and the goal of this bundle is to further extend it.
