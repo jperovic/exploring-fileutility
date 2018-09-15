@@ -37,8 +37,8 @@
             // Create new objects from png's
             $source = new Imagick($file->getRealPath());
             $sourceSize = $source->getimagegeometry();
-            $source->setimagecompression($this->configuration['compression']);
-            $source->setimagecompressionquality($this->configuration['quality']);
+            $source->setimagecompression($this->configuration['quality']['compression']);
+            $source->setimagecompressionquality($this->configuration['quality']['quality']);
             $source->setImageMatte(true);
             $mask = new Imagick($maskFile->getRealPath());
             $maskSize = $mask->getimagegeometry();
@@ -88,8 +88,8 @@
 
             $source = new Imagick($file->getRealPath());
             $source->setImageMatte(true);
-            $source->setimagecompression($this->configuration['compression']);
-            $source->setimagecompressionquality($this->configuration['quality']);
+            $source->setimagecompression($this->configuration['quality']['compression']);
+            $source->setimagecompressionquality($this->configuration['quality']['quality']);
             $size = $source->getimagegeometry();
             $w = $size['width'];
             $h = $size['height'];
@@ -167,8 +167,8 @@
 
             $source = new Imagick($file->getRealPath());
             $source->setImageMatte(true);
-            $source->setimagecompression($this->configuration['compression']);
-            $source->setimagecompressionquality($this->configuration['quality']);
+            $source->setimagecompression($this->configuration['quality']['compression']);
+            $source->setimagecompressionquality($this->configuration['quality']['quality']);
             $source->cropimage($width, $height, $x, $y);
 
             $newFileName = $this->fileManager->getFilenameGenerator()->createScaled(
