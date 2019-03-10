@@ -13,7 +13,6 @@
         "ext-gd": "*",
         "ext-imagick": "*"
     },
-    "target-dir": "Exploring/FileUtilityBundle",
     "autoload": {
         "psr-4": {
             "Exploring\\FileUtilityBundle\\": "./"
