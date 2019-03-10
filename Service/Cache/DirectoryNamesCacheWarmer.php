@@ -1,4 +1,5 @@
 <?php
+
     namespace Exploring\FileUtilityBundle\Service\Cache;
 
     use Monolog\Logger;
@@ -8,6 +9,8 @@
 
     class DirectoryNamesCacheWarmer implements CacheWarmerInterface, CacheClearerInterface
     {
+        const TARGET_CLASS_NAME = "FileUtilityDirectory";
+
         /**
          * @var Logger
          */
@@ -53,24 +56,27 @@
         public function warmUp($cacheDir)
         {
             $classNamespace = __NAMESPACE__;
-            $className = "FileUtilityDirectory";
-            $cachePath = __DIR__ . '/' . $className . '.php';
+
+            $cachePath = $cacheDir . '/exploring/' . self::TARGET_CLASS_NAME . '.php';
 
             $cache = new ConfigCache($cachePath, $this->debug);
 
-            if ( !$cache->isFresh() ) {
-
+            if (!$cache->isFresh())
+            {
                 /** @var \DirectoryIterator[] $dirIterator */
                 $dirIterator = new \DirectoryIterator($this->uploadRoot);
 
-                $code = "<?php namespace $classNamespace {class $className{";
+                $code = "<?php namespace $classNamespace {class " . self::TARGET_CLASS_NAME .  "{";
 
-                foreach ( $dirIterator as $dir ) {
-                    if ( $dir->isDir() && !$dir->isDot() ) {
+                foreach ($dirIterator as $dir)
+                {
+                    if ($dir->isDir() && !$dir->isDot())
+                    {
                         $normalizedName = strtoupper(preg_replace("/([a-z])([A-Z0-9])|([0-9])([a-z])/", "$1_$2", $dir));
 
                         // Constants cannot start with digit
-                        if ( preg_match('/^[0-9]/', $normalizedName) ) {
+                        if (preg_match('/^[0-9]/', $normalizedName))
+                        {
                             $normalizedName = '_' . $normalizedName;
                         }
 
@@ -95,9 +101,10 @@
          */
         public function clear($cacheDir)
         {
-            $cachePath = __DIR__ . '/FileUtilityDirectory.php';
+            $cachePath = $cacheDir . '/exploring/' . self::TARGET_CLASS_NAME . '.php';
 
-            if ( is_file($cachePath) ) {
+            if (is_file($cachePath))
+            {
                 unlink($cachePath);
             }
         }

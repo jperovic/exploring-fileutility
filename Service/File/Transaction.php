@@ -1,4 +1,5 @@
 <?php
+
     namespace Exploring\FileUtilityBundle\Service\File;
 
     use Exploring\FileUtilityBundle\Data\FileDescriptor;
@@ -22,9 +23,9 @@
         {
             $this->manager = $manager;
 
-            $this->entries = array();
+            $this->entries = array ();
 
-            $this->temporaryFiles = array();
+            $this->temporaryFiles = array ();
         }
 
         /**
@@ -42,24 +43,34 @@
 
             $realPath = $file->getRealPath();
 
-            if (strpos($realPath, $target) === 0) {
+            if (strpos($realPath, $target) === 0)
+            {
                 $newRealPath = $realPath;
-            } else {
+            }
+            else
+            {
                 $newFileName = $this->manager->getFilenameGenerator()->generateRandom($file, $isTemporary);
 
-                if (!$newFileName) {
+                if (!$newFileName)
+                {
                     throw new FileManagerException("Filename generator's generateRandom() must return string but the result was empty. Did you implement it properly?");
                 }
 
                 $newRealPath = $target . $newFileName;
 
-                if ($keepSourceFile) {
-                    if ($isTemporary && array_key_exists($file->getFilename(), $this->temporaryFiles)) {
+                if ($keepSourceFile)
+                {
+                    if ($isTemporary && array_key_exists($file->getFilename(), $this->temporaryFiles))
+                    {
                         $newRealPath = $this->temporaryFiles[$file->getFilename()];
-                    } else {
+                    }
+                    else
+                    {
                         copy($file->getRealPath(), $newRealPath);
                     }
-                } else {
+                }
+                else
+                {
                     $file->move($target, $newFileName);
                 }
             }
@@ -69,7 +80,8 @@
 
             $this->entries[] = new TransactionEntry(TransactionEntry::UPLOAD, $newRealPath);
 
-            if ($isTemporary) {
+            if ($isTemporary)
+            {
                 $this->temporaryFiles[$file->getFilename()] = $newRealPath;
             }
 
@@ -85,15 +97,17 @@
          */
         function remove($filename, $directory)
         {
-            if ($filename !== null) {
+            if ($filename !== null)
+            {
                 $target = $this->manager->getRealPath($directory);
                 $absolutePath = realpath($target . $filename);
 
-                if ($absolutePath === false) {
+                if ($absolutePath === false)
+                {
                     throw new FileManagerException("File \"$filename\" does not exist.");
                 }
 
-                $entryData = array($absolutePath, $target . md5($filename . time()));
+                $entryData = array ( $absolutePath, $target . md5($filename . time()) );
                 rename($absolutePath, $entryData[1]);
                 $this->entries[] = new TransactionEntry(TransactionEntry::REMOVE, $entryData);
 
@@ -105,28 +119,35 @@
 
         function commit()
         {
-            foreach ($this->entries as $e) {
-                if ($e->getAction() == TransactionEntry::REMOVE) {
+            foreach ($this->entries as $e)
+            {
+                if ($e->getAction() == TransactionEntry::REMOVE)
+                {
                     $data = $e->getPayload();
                     @unlink($data[1]);
                 }
             }
 
-            foreach ($this->temporaryFiles as $tmp) {
+            foreach ($this->temporaryFiles as $tmp)
+            {
                 @unlink($tmp);
             }
         }
 
         function rollback()
         {
-            while (!empty($this->entries)) {
+            while (!empty($this->entries))
+            {
                 /** @var TransactionEntry $e */
                 $e = array_pop($this->entries);
                 $data = $e->getPayload();
 
-                if ($e->getAction() == TransactionEntry::UPLOAD) {
+                if ($e->getAction() == TransactionEntry::UPLOAD)
+                {
                     @unlink($data);
-                } else { // REMOVE
+                }
+                else
+                { // REMOVE
                     rename($data[1], $data[0]);
                 }
             }
