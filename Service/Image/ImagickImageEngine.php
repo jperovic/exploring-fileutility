@@ -1,7 +1,9 @@
 <?php
+
     namespace Exploring\FileUtilityBundle\Service\Image;
 
     use Exploring\FileUtilityBundle\Data\ImageDescriptor;
+    use Exploring\FileUtilityBundle\Service\File\FileManagerException;
     use Imagick;
     use Symfony\Component\HttpFoundation\File\File;
     use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -17,7 +19,8 @@
          */
         function __construct(array $configuration)
         {
-            if ( !class_exists("Imagick") ) {
+            if (!class_exists("Imagick"))
+            {
                 throw new ImageProcessorException("Imagick library class was not found. Did you forget to install it?", 500);
             }
 
@@ -31,10 +34,14 @@
          * @param bool   $keepSourceFile
          *
          * @return ImageDescriptor
+         * @throws ImageProcessorException
+         * @throws FileManagerException
+         * @throws \ImagickException
          */
         public function clip(File $file, $directory, File $maskFile, $keepSourceFile = FALSE)
         {
-            if ( $file instanceof UploadedFile ) {
+            if ($file instanceof UploadedFile)
+            {
                 $entry = $this->fileManager->save($file, $directory, TRUE, $keepSourceFile);
                 $file = $entry->getFile();
             }
@@ -64,7 +71,8 @@
             $source->destroy();
             $mask->destroy();
 
-            if ( !$keepSourceFile ) {
+            if (!$keepSourceFile)
+            {
                 $this->removeSourceFile($file);
             }
 
@@ -83,10 +91,14 @@
          * @param bool   $keepSourceFile
          *
          * @return ImageDescriptor
+         * @throws ImageProcessorException
+         * @throws FileManagerException
+         * @throws \ImagickException
          */
         public function scale(File $file, $directory, $width, $height = 0, $enlarge = TRUE, $keepSourceFile = FALSE)
         {
-            if ( $file instanceof UploadedFile ) {
+            if ($file instanceof UploadedFile)
+            {
                 $entry = $this->fileManager->save($file, $directory, TRUE, $keepSourceFile);
                 $file = $entry->getFile();
             }
@@ -102,15 +114,20 @@
             $isLandscape = $w > $h;
             $ratio = $isLandscape ? $w / $h : $h / $w;
 
-            if ( $width == 0 ) {
-                if ( $height > $h && !$enlarge ) {
+            if ($width == 0)
+            {
+                if ($height > $h && !$enlarge)
+                {
                     $height = $h;
                 }
                 $width = $isLandscape ? $height * $ratio : $height / $ratio;
             }
-            else {
-                if ( $height == 0 ) {
-                    if ( $width > $w && !$enlarge ) {
+            else
+            {
+                if ($height == 0)
+                {
+                    if ($width > $w && !$enlarge)
+                    {
                         $width = $w;
                     }
                     $height = $isLandscape ? $width / $ratio : $width * $ratio;
@@ -130,7 +147,8 @@
             $source->writeimage($destination);
             $source->destroy();
 
-            if ( !$keepSourceFile ) {
+            if (!$keepSourceFile)
+            {
                 $this->removeSourceFile($file);
             }
 
@@ -141,6 +159,7 @@
          * @param string $filename
          *
          * @return int[]
+         * @throws \ImagickException
          */
         public function getImageSize($filename)
         {
@@ -161,10 +180,14 @@
          * @param bool   $keepSourceFile
          *
          * @return ImageDescriptor
+         * @throws FileManagerException
+         * @throws ImageProcessorException
+         * @throws \ImagickException
          */
         public function crop(File $file, $directory, $x, $y, $width, $height, $keepSourceFile = FALSE)
         {
-            if ( $file instanceof UploadedFile ) {
+            if ($file instanceof UploadedFile)
+            {
                 $entry = $this->fileManager->save($file, $directory, TRUE, $keepSourceFile);
                 $file = $entry->getFile();
             }
@@ -188,7 +211,8 @@
             $source->writeimage($destination);
             $source->destroy();
 
-            if ( !$keepSourceFile ) {
+            if (!$keepSourceFile)
+            {
                 $this->removeSourceFile($file);
             }
 

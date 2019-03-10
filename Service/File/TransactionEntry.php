@@ -1,4 +1,5 @@
 <?php
+
     namespace Exploring\FileUtilityBundle\Service\File;
 
     class TransactionEntry
@@ -15,7 +16,7 @@
 
         /**
          * @param string $action
-         * @param mixed $payload
+         * @param mixed  $payload
          */
         function __construct($action, $payload)
         {

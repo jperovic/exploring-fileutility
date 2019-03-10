@@ -1,4 +1,5 @@
 <?php
+
     namespace Exploring\FileUtilityBundle\Service\File;
 
     use Exploring\FileUtilityBundle\Data\FileDescriptor;
@@ -14,7 +15,7 @@
         /**
          * @var string[]
          */
-        private $paths = array();
+        private $paths = array ();
 
         /**
          * @var string
@@ -44,7 +45,8 @@
 
             $this->filenameGenerator = $filenameGenerator ? $filenameGenerator : new DefaultFilenameGenerator();
 
-            foreach ( $directoriesNames as $dirName ) {
+            foreach ($directoriesNames as $dirName)
+            {
                 $this->paths[$dirName] = $this->uploadsRoot . ($dirName ? DIRECTORY_SEPARATOR . $dirName : '') . DIRECTORY_SEPARATOR;
             }
         }
@@ -55,12 +57,12 @@
         }
 
         /**
-         * @throws FileManagerException
          * @return $this
          */
         public function rollback()
         {
-            if ( $this->hasActiveTransaction() ) {
+            if ($this->hasActiveTransaction())
+            {
                 $this->transaction->rollback();
                 $this->transaction = NULL;
             }
@@ -71,7 +73,7 @@
         /**
          * @return bool
          */
-        private function hasActiveTransaction()
+        public function hasActiveTransaction()
         {
             return NULL !== $this->transaction;
         }
@@ -83,6 +85,7 @@
          * @param bool   $keepSourceFile
          *
          * @return FileDescriptor
+         * @throws FileManagerException
          */
         public function save(File $file, $targetDirectory, $temp = FALSE, $keepSourceFile = FALSE)
         {
@@ -95,7 +98,8 @@
         public function beginTransaction()
         {
             // Check if the transaction was already created
-            if ( !$this->hasActiveTransaction() ) {
+            if (!$this->hasActiveTransaction())
+            {
                 $this->transaction = new Transaction($this);
             }
 
@@ -108,6 +112,7 @@
          * @param bool   $checkFileExists
          *
          * @return string
+         * @throws FileManagerException
          */
         public function getAbsolutePath($filename, $directory, $checkFileExists = FALSE)
         {
@@ -121,6 +126,7 @@
          * @param $directory
          *
          * @return FileDescriptor
+         * @throws FileManagerException
          */
         public function getFileDescriptor($filename, $directory)
         {
@@ -134,15 +140,18 @@
          *
          * @return mixed
          * @throws \InvalidArgumentException
+         * @throws FileManagerException
          */
         public function guessDirectoryOfFile(File $file)
         {
             $real = $file->getRealPath();
             $directories = array_keys($this->paths);
-            foreach ( $directories as $k ) {
+            foreach ($directories as $k)
+            {
                 $stripped = $this->stripAbsolutePath($real, $k);
 
-                if ( $stripped !== NULL ) {
+                if ($stripped !== NULL)
+                {
                     return $k;
                 }
             }
@@ -158,7 +167,8 @@
          */
         public function getRealPath($directory)
         {
-            if ( !array_key_exists($directory, $this->paths) ) {
+            if (!array_key_exists($directory, $this->paths))
+            {
                 $directories = implode(',', array_map(function ($item) {
                         return "\"$item\"";
                     }, array_keys($this->paths))
@@ -168,11 +178,13 @@
 
             $realPath = realpath($this->paths[$directory]);
 
-            if ( !$realPath ) {
+            if (!$realPath)
+            {
                 throw new FileManagerException("Path to directory \"$directory\" does not exist. Tried: \"{$this->paths[$directory]}\"");
             }
 
-            if ( !is_writable($realPath) ) {
+            if (!is_writable($realPath))
+            {
                 throw new FileManagerException("Path of directory \"$directory\" is not writable. Tried to write to: \"$realPath\"");
             }
 
@@ -184,15 +196,18 @@
          * @param string $directory
          *
          * @return null|string
+         * @throws FileManagerException
          */
         public function stripAbsolutePath($path, $directory)
         {
-            if ( $directory == NULL ) {
+            if ($directory == NULL)
+            {
                 return $path;
             }
 
             $dirpath = $this->getRealPath($directory);
-            if ( strpos($path, $dirpath) === 0 ) {
+            if (strpos($path, $dirpath) === 0)
+            {
                 return substr($path, strlen($dirpath));
             }
 
@@ -204,6 +219,7 @@
          * @param string $directory
          *
          * @return $this
+         * @throws FileManagerException
          */
         public function remove($filename, $directory)
         {
@@ -216,19 +232,23 @@
          * @param FileDescriptor|File $file
          *
          * @throws \InvalidArgumentException
+         * @throws FileManagerException
          * @return $this
          */
         public function removeFile($file)
         {
-            if ( !$file instanceof FileDescriptor && $file instanceof File ) {
+            if (!$file instanceof FileDescriptor && $file instanceof File)
+            {
                 throw new \InvalidArgumentException(sprintf("Argument should be instance of Symfony\\Component\\HttpFoundation\\File or "
                     . "Exploring\\FileUtilityBundle\\Data\\FileDescriptor. %s given.", gettype($file)));
             }
 
-            if ( $file instanceof FileDescriptor ) {
+            if ($file instanceof FileDescriptor)
+            {
                 return $this->remove($file->getFile()->getFilename(), $file->getDirectory());
             }
-            else {
+            else
+            {
                 /** @var File $file */
                 $targetDirectory = $this->guessDirectoryOfFile($file);
 
@@ -237,12 +257,12 @@
         }
 
         /**
-         * @throws FileManagerException
          * @return $this
          */
         public function commit()
         {
-            if ( $this->hasActiveTransaction() ) {
+            if ($this->hasActiveTransaction())
+            {
                 $this->transaction->commit();
                 $this->transaction = NULL;
             }
@@ -272,7 +292,8 @@
          */
         private function getTransaction()
         {
-            if ( !$this->hasActiveTransaction() ) {
+            if (!$this->hasActiveTransaction())
+            {
                 $this->beginTransaction();
             }
 

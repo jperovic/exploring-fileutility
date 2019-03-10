@@ -1,6 +1,8 @@
 <?php
     namespace Exploring\FileUtilityBundle\DependencyInjection;
 
+    use Exploring\FileUtilityBundle\Service\File\FileManager;
+    use Exploring\FileUtilityBundle\Service\Image\ImageProcessor;
     use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
     use Symfony\Component\DependencyInjection\ContainerBuilder;
     use Symfony\Component\DependencyInjection\Reference;
@@ -35,8 +37,9 @@
                 ));
             }
 
-            $container->getDefinition("exploring_file_utility.manager")
-                ->setArguments(array($availableSubdirs, $uploadRoot, $filenameGenerator));
+            $fileManagerDefinition = $container->findDefinition(FileManager::class);
+            $fileManagerDefinition->replaceArgument(0, $availableSubdirs);
+            $fileManagerDefinition->replaceArgument(2, $filenameGenerator);
 
             $chainExecutorRef = NULL;
             $chains = $container->getParameter('exploring_file_utility.image_chains');
@@ -61,27 +64,27 @@
             switch ( $imageEngineService ) {
                 case Constants::ENGINE_GD:
                     $arguments = array(
-                        new Reference("exploring_file_utility.manager"),
+                        new Reference(FileManager::class),
                         new Reference("exploring_file_utility.imageengine_gd"),
                         $chainExecutorRef
                     );
                     break;
                 case Constants::ENGINE_IMAGICK:
                     $arguments = array(
-                        new Reference("exploring_file_utility.manager"),
+                        new Reference(FileManager::class),
                         new Reference("exploring_file_utility.imageengine_imagick"),
                         $chainExecutorRef
                     );
                     break;
                 default:
                     $arguments = array(
-                        new Reference("exploring_file_utility.manager"),
+                        new Reference(FileManager::class),
                         new Reference($imageEngineService),
                         $chainExecutorRef
                     );
             }
 
-            $container->getDefinition("exploring_file_utility.imageprocessor")
+            $container->findDefinition(ImageProcessor::class)
                 ->setArguments($arguments);
         }
     }

@@ -1,9 +1,11 @@
 <?php
+
     namespace Exploring\FileUtilityBundle\Service\Image;
 
     use Exploring\FileUtilityBundle\Data\FileDescriptor;
     use Exploring\FileUtilityBundle\Data\ImageDescriptor;
     use Exploring\FileUtilityBundle\Service\File\FileManager;
+    use Exploring\FileUtilityBundle\Service\File\FileManagerException;
     use Exploring\FileUtilityBundle\Service\Image\Chains\Executor;
     use Symfony\Component\HttpFoundation\File\File;
 
@@ -35,7 +37,8 @@
             $this->engine = $engine;
             $this->engine->setFileManager($fileManager);
             $this->chainExecutor = $chainExecutor;
-            if ( $chainExecutor ) {
+            if ($chainExecutor)
+            {
                 $this->chainExecutor->setProcessor($this);
             }
         }
@@ -114,6 +117,7 @@
          * @param string|null $directory
          *
          * @return ImageDescriptor
+         * @throws ImageProcessorException
          */
         public function applyChain(File $file, $chainName, $directory = NULL)
         {
@@ -133,6 +137,7 @@
          * @param string $directory
          *
          * @return ImageDescriptor
+         * @throws FileManagerException
          */
         public function getImage($filename, $directory)
         {

@@ -1,8 +1,10 @@
 <?php
+
     namespace Exploring\FileUtilityBundle\Service\Image;
 
     use Exploring\FileUtilityBundle\Data\ImageDescriptor;
     use Exploring\FileUtilityBundle\Service\File\FileManager;
+    use Exploring\FileUtilityBundle\Service\File\FileManagerException;
     use Symfony\Component\HttpFoundation\File\File;
 
     abstract class AbstractImageEngine
@@ -37,10 +39,12 @@
 
             $landscape = $dim['width'] > $dim['height'];
 
-            if ( $landscape ) {
+            if ($landscape)
+            {
                 return $this->scale($file, $directory, $size, 0, $enlarge, $keepSourceFile);
             }
-            else {
+            else
+            {
                 return $this->scale($file, $directory, 0, $size, $enlarge, $keepSourceFile);
             }
         }
@@ -96,13 +100,11 @@
         }
 
         /**
-         * @param bool $onlyLastTransation
-         *
          * @return $this
          */
-        public function rollback($onlyLastTransation = FALSE)
+        public function rollback()
         {
-            $this->fileManager->rollback($onlyLastTransation);
+            $this->fileManager->rollback();
 
             return $this;
         }
@@ -115,13 +117,16 @@
          */
         protected static function assertGeneratedName($name, $invocation)
         {
-            if ( !$name ) {
+            if (!$name)
+            {
                 throw new ImageProcessorException("Filename generator's $invocation() must return string but the result was empty. Did you implement it properly?");
             }
         }
 
         /**
          * @param File $file
+         *
+         * @throws FileManagerException
          */
         protected function removeSourceFile(File $file)
         {
