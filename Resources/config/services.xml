@@ -19,10 +19,20 @@
 
     <services>
         <!-- Will compile service arguments -->
-        <service id="exploring_file_utility.manager" class="%exploring_file_utility.manager.class%"/>
+        <!-- Fake arguments -->
+        <service id="Exploring\FileUtilityBundle\Service\File\FileManager" public="true">
+            <argument></argument>
+            <argument>%exploring_file_utility.upload_root%</argument>
+            <argument>null</argument>
+        </service>
 
         <!-- Will compile service arguments -->
-        <service id="exploring_file_utility.imageprocessor" class="%exploring_file_utility.imageprocessor.class%"/>
+        <!-- Fake arguments -->
+        <service id="Exploring\FileUtilityBundle\Service\Image\ImageProcessor" public="true">
+            <argument>null</argument>
+            <argument>null</argument>
+            <argument>null</argument>
+        </service>
 
         <service id="exploring_file_utility.imageengine_gd" class="%exploring_file_utility.imageengine_gd.class%"
                  public="false">

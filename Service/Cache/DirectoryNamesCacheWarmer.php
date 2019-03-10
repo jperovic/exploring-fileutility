@@ -57,7 +57,7 @@
         {
             $classNamespace = __NAMESPACE__;
 
-            $cachePath = $cacheDir . '/exploring/' . self::TARGET_CLASS_NAME . '.php';
+            $cachePath = __DIR__ . '/' . self::TARGET_CLASS_NAME . '.php';
 
             $cache = new ConfigCache($cachePath, $this->debug);
 
@@ -101,7 +101,7 @@
          */
         public function clear($cacheDir)
         {
-            $cachePath = $cacheDir . '/exploring/' . self::TARGET_CLASS_NAME . '.php';
+            $cachePath = __DIR__ . '/' . self::TARGET_CLASS_NAME . '.php';
 
             if (is_file($cachePath))
             {
