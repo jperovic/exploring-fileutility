@@ -1,7 +1,7 @@
 <?php
     namespace Exploring\FileUtilityBundle\Service\File;
 
-    use Exploring\FileUtilityBundle\Data\FileWrapper;
+    use Exploring\FileUtilityBundle\Data\FileDescriptor;
     use Symfony\Component\HttpFoundation\File\File;
 
     class Transaction
@@ -15,6 +15,9 @@
         /** @var array */
         private $temporaryFiles;
 
+        /**
+         * @param FileManager $manager
+         */
         function __construct(FileManager $manager)
         {
             $this->manager = $manager;
@@ -26,16 +29,16 @@
 
         /**
          * @param File   $file
-         * @param string $saveToAlias
+         * @param string $targetDirectory
          * @param bool   $isTemporary
          * @param bool   $keepSourceFile
          *
          * @throws FileManagerException
-         * @return FileWrapper
+         * @return FileDescriptor
          */
-        function save(File $file, $saveToAlias, $isTemporary = false, $keepSourceFile = false)
+        function save(File $file, $targetDirectory, $isTemporary = false, $keepSourceFile = false)
         {
-            $target = $this->manager->resolveDirectoryAlias($saveToAlias);
+            $target = $this->manager->getRealPath($targetDirectory);
 
             $realPath = $file->getRealPath();
 
@@ -45,7 +48,7 @@
                 $newFileName = $this->manager->getFilenameGenerator()->generateRandom($file, $isTemporary);
 
                 if (!$newFileName) {
-                    throw new FileManagerException("Filename generator's generateRandom() must return string but the result was NULL. Did you implement it properly?");
+                    throw new FileManagerException("Filename generator's generateRandom() must return string but the result was empty. Did you implement it properly?");
                 }
 
                 $newRealPath = $target . $newFileName;
@@ -62,7 +65,7 @@
             }
 
             // create the reference to new file
-            $wrap = new FileWrapper($newRealPath, $saveToAlias);
+            $wrap = new FileDescriptor($newRealPath, $targetDirectory);
 
             $this->entries[] = new TransactionEntry(TransactionEntry::UPLOAD, $newRealPath);
 
@@ -75,19 +78,19 @@
 
         /**
          * @param string $filename
-         * @param string $directoryAlias
+         * @param string $directory
          *
          * @throws FileManagerException
          * @return bool
          */
-        function remove($filename, $directoryAlias)
+        function remove($filename, $directory)
         {
             if ($filename !== null) {
-                $target = $this->manager->resolveDirectoryAlias($directoryAlias);
+                $target = $this->manager->getRealPath($directory);
                 $absolutePath = realpath($target . $filename);
 
                 if ($absolutePath === false) {
-                    throw new FileManagerException(sprintf("File \"%s\" does not exist.", $filename));
+                    throw new FileManagerException("File \"$filename\" does not exist.");
                 }
 
                 $entryData = array($absolutePath, $target . md5($filename . time()));
@@ -104,7 +107,7 @@
         {
             foreach ($this->entries as $e) {
                 if ($e->getAction() == TransactionEntry::REMOVE) {
-                    $data = $e->getData();
+                    $data = $e->getPayload();
                     @unlink($data[1]);
                 }
             }
@@ -119,7 +122,7 @@
             while (!empty($this->entries)) {
                 /** @var TransactionEntry $e */
                 $e = array_pop($this->entries);
-                $data = $e->getData();
+                $data = $e->getPayload();
 
                 if ($e->getAction() == TransactionEntry::UPLOAD) {
                     @unlink($data);

@@ -1,8 +1,8 @@
 <?php
     namespace Exploring\FileUtilityBundle\Service\Image;
 
-    use Exploring\FileUtilityBundle\Data\FileWrapper;
-    use Exploring\FileUtilityBundle\Data\ImageWrapper;
+    use Exploring\FileUtilityBundle\Data\FileDescriptor;
+    use Exploring\FileUtilityBundle\Data\ImageDescriptor;
     use Exploring\FileUtilityBundle\Service\File\FileManager;
     use Exploring\FileUtilityBundle\Service\Image\Chains\Executor;
     use Symfony\Component\HttpFoundation\File\File;
@@ -24,33 +24,38 @@
          */
         private $chainExecutor;
 
-        function __construct(FileManager $fileManager, AbstractImageEngine $engine, Executor $chainExecutor = null)
+        /**
+         * @param FileManager         $fileManager
+         * @param AbstractImageEngine $engine
+         * @param Executor            $chainExecutor
+         */
+        function __construct(FileManager $fileManager, AbstractImageEngine $engine, Executor $chainExecutor = NULL)
         {
             $this->fileManager = $fileManager;
             $this->engine = $engine;
             $this->engine->setFileManager($fileManager);
             $this->chainExecutor = $chainExecutor;
-            if ( $chainExecutor ){
+            if ( $chainExecutor ) {
                 $this->chainExecutor->setProcessor($this);
             }
         }
 
         /**
          * @param File   $file
-         * @param string $saveToAlias
+         * @param string $directory
          * @param File   $maskFile
          * @param bool   $keepSourceFile
          *
-         * @return ImageWrapper
+         * @return ImageDescriptor
          */
-        public function clip(File $file, $saveToAlias, File $maskFile, $keepSourceFile = false)
+        public function clip(File $file, $directory, File $maskFile, $keepSourceFile = FALSE)
         {
-            return $this->engine->clip($file, $saveToAlias, $maskFile, $keepSourceFile);
+            return $this->engine->clip($file, $directory, $maskFile, $keepSourceFile);
         }
 
         /**
          * @param File   $file
-         * @param string $saveToAlias
+         * @param string $directory
          * @param int    $x
          * @param int    $y
          * @param int    $width
@@ -59,23 +64,23 @@
          *
          * @return mixed
          */
-        public function crop(File $file, $saveToAlias, $x, $y, $width, $height, $keepSourceFile = false)
+        public function crop(File $file, $directory, $x, $y, $width, $height, $keepSourceFile = FALSE)
         {
-            return $this->engine->crop($file, $saveToAlias, $x, $y, $width, $height, $keepSourceFile);
+            return $this->engine->crop($file, $directory, $x, $y, $width, $height, $keepSourceFile);
         }
 
         /**
          * @param File   $file
-         * @param string $saveToAlias
+         * @param string $directory
          * @param int    $size
          * @param bool   $enlarge
          * @param bool   $keepSourceFile
          *
-         * @return FileWrapper
+         * @return FileDescriptor
          */
-        public function scaleLargeEdge(File $file, $saveToAlias, $size, $enlarge = true, $keepSourceFile = false)
+        public function scaleLargeEdge(File $file, $directory, $size, $enlarge = TRUE, $keepSourceFile = FALSE)
         {
-            return $this->engine->scaleLargeEdge($file, $saveToAlias, $size, $enlarge, $keepSourceFile);
+            return $this->engine->scaleLargeEdge($file, $directory, $size, $enlarge, $keepSourceFile);
         }
 
         /**
@@ -90,29 +95,29 @@
 
         /**
          * @param File   $file
-         * @param string $saveToAlias
+         * @param string $directory
          * @param int    $width
          * @param int    $height
          * @param bool   $enlarge
          * @param bool   $keepSourceFile
          *
-         * @return FileWrapper
+         * @return FileDescriptor
          */
-        public function scale(File $file, $saveToAlias, $width, $height = 0, $enlarge = true, $keepSourceFile = false)
+        public function scale(File $file, $directory, $width, $height = 0, $enlarge = TRUE, $keepSourceFile = FALSE)
         {
-            return $this->engine->scale($file, $saveToAlias, $width, $height, $enlarge, $keepSourceFile);
+            return $this->engine->scale($file, $directory, $width, $height, $enlarge, $keepSourceFile);
         }
 
         /**
          * @param File        $file
          * @param string      $chainName
-         * @param string|null $saveToAlias
+         * @param string|null $directory
          *
-         * @return ImageWrapper
+         * @return ImageDescriptor
          */
-        public function applyChain(File $file, $chainName, $saveToAlias = null)
+        public function applyChain(File $file, $chainName, $directory = NULL)
         {
-            return $this->chainExecutor->execute($file, $chainName, $saveToAlias);
+            return $this->chainExecutor->execute($file, $chainName, $directory);
         }
 
         /**
@@ -121,6 +126,20 @@
         public function getFileManager()
         {
             return $this->fileManager;
+        }
+
+        /**
+         * @param string $filename
+         * @param string $directory
+         *
+         * @return ImageDescriptor
+         */
+        public function getImage($filename, $directory)
+        {
+            $fileDescriptor = $this->fileManager->getFileDescriptor($filename, $directory);
+            $size = $this->getImageSize($fileDescriptor->getRealPath());
+
+            return new ImageDescriptor($fileDescriptor, $size['width'], $size['height']);
         }
 
         /**
@@ -134,13 +153,11 @@
         }
 
         /**
-         * @param bool $onlyLastTransation
-         *
          * @return $this
          */
-        public function rollback($onlyLastTransation = false)
+        public function rollback()
         {
-            $this->fileManager->rollback($onlyLastTransation);
+            $this->fileManager->rollback();
 
             return $this;
         }

@@ -1,7 +1,7 @@
 <?php
     namespace Exploring\FileUtilityBundle\Data;
 
-    class ImageWrapper extends FileWrapper
+    class ImageDescriptor extends FileDescriptor
     {
         /** @var int */
         private $width;
@@ -10,13 +10,13 @@
         private $height;
 
         /**
-         * @param FileWrapper $fileWrapper
+         * @param FileDescriptor $descriptor
          * @param int         $width
          * @param int         $height
          */
-        public function __construct(FileWrapper $fileWrapper, $width, $height)
+        public function __construct(FileDescriptor $descriptor, $width, $height)
         {
-            parent::__construct($fileWrapper->getFile(), $fileWrapper->getDirectoryAlias());
+            parent::__construct($descriptor->getFile(), $descriptor->getDirectory());
 
             $this->width = $width;
             $this->height = $height;
@@ -36,5 +36,13 @@
         public function getWidth()
         {
             return $this->width;
+        }
+
+        /**
+         * @return array
+         */
+        public function getSizeAsArray()
+        {
+            return array($this->width, $this->height);
         }
     }

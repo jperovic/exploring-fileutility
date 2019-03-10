@@ -3,7 +3,7 @@
 
     use Symfony\Component\HttpFoundation\File\File;
 
-    class FileWrapper
+    class FileDescriptor
     {
         /**
          * @var File
@@ -13,16 +13,16 @@
         /**
          * @var string
          */
-        private $directoryAlias;
+        private $directory;
 
         /**
          * @param File|string $fileOrRealPath
-         * @param string      $directoryAlias
+         * @param string      $directory
          */
-        public function __construct($fileOrRealPath, $directoryAlias)
+        public function __construct($fileOrRealPath, $directory)
         {
             $this->file = is_string($fileOrRealPath) ? new File($fileOrRealPath) : $fileOrRealPath;
-            $this->directoryAlias = $directoryAlias;
+            $this->directory = $directory;
         }
 
         /**
@@ -44,9 +44,9 @@
         /**
          * @return string
          */
-        public function getDirectoryAlias()
+        public function getDirectory()
         {
-            return $this->directoryAlias;
+            return $this->directory;
         }
 
         /**

@@ -12,12 +12,6 @@
      */
     class Configuration implements ConfigurationInterface
     {
-        const DEFAULT_JPEG_QUALITY = 75;
-        const DEFAULT_PNG_QUALITY = 7;
-
-        const DEFAULT_IMAGICK_COMPRESSION = 1; // COMPRESSION_NO
-        const DEFAULT_IMAGICK_COMPRESSION_QUALITY = 86;
-
         /**
          * {@inheritDoc}
          */
@@ -29,9 +23,6 @@
             /** @noinspection PhpUndefinedMethodInspection */
             $rootNode
                 ->children()
-                    ->arrayNode('directories')->useAttributeAsKey('name')->requiresAtLeastOneElement()
-                        ->prototype('scalar')->end()
-                    ->end()
                     ->scalarNode('upload_root')->isRequired()->end()
                     ->scalarNode('filename_generator')->defaultValue(null)->end()
                     ->scalarNode('image_engine')->defaultValue('gd')->end()
@@ -39,22 +30,22 @@
                         ->children()
                             ->arrayNode('quality')->addDefaultsIfNotSet()
                                 ->children()
-                                    ->integerNode('jpeg')->defaultValue(self::DEFAULT_JPEG_QUALITY)->end()
-                                    ->integerNode('png')->defaultValue(self::DEFAULT_PNG_QUALITY)->end()
-                                ->end()
+                ->integerNode('jpeg')->defaultValue(Constants::DEFAULT_JPEG_QUALITY)->end()
+                ->integerNode('png')->defaultValue(Constants::DEFAULT_PNG_QUALITY)->end()
+                ->end()
                             ->end()
                         ->end()
                     ->end()
                     ->arrayNode('imagick')->addDefaultsIfNotSet()
                         ->children()
-                            ->integerNode('compression')->defaultValue(self::DEFAULT_IMAGICK_COMPRESSION)->end()
-                            ->integerNode('quality')->defaultValue(self::DEFAULT_IMAGICK_COMPRESSION_QUALITY)->end()
-                        ->end()
+                ->integerNode('compression')->defaultValue(Constants::DEFAULT_IMAGICK_COMPRESSION)->end()
+                ->integerNode('quality')->defaultValue(Constants::DEFAULT_IMAGICK_COMPRESSION_QUALITY)->end()
+                ->end()
                     ->end()
                     ->arrayNode('chains')->defaultValue(array())->useAttributeAsKey('name')
                         ->prototype('array')->addDefaultsIfNotSet()
                             ->children()
-                                ->scalarNode('alias')->defaultNull()->end()
+                                ->scalarNode('directory')->defaultNull()->end()
                                 ->arrayNode('steps')->useAttributeAsKey('name')->requiresAtLeastOneElement()
                                     ->prototype('array')
                                         ->prototype('scalar')

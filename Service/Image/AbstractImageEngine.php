@@ -1,7 +1,7 @@
 <?php
     namespace Exploring\FileUtilityBundle\Service\Image;
 
-    use Exploring\FileUtilityBundle\Data\ImageWrapper;
+    use Exploring\FileUtilityBundle\Data\ImageDescriptor;
     use Exploring\FileUtilityBundle\Service\File\FileManager;
     use Symfony\Component\HttpFoundation\File\File;
 
@@ -14,33 +14,34 @@
 
         /**
          * @param File   $file
-         * @param string $saveToAlias
+         * @param string $directory
          * @param File   $maskFile
          * @param bool   $keepSourceFile
          *
-         * @return ImageWrapper
+         * @return ImageDescriptor
          */
-        public abstract function clip(File $file, $saveToAlias, File $maskFile, $keepSourceFile = false);
+        public abstract function clip(File $file, $directory, File $maskFile, $keepSourceFile = FALSE);
 
         /**
          * @param File   $file
-         * @param string $saveToAlias
+         * @param string $directory
          * @param int    $size
          * @param bool   $enlarge
          * @param bool   $keepSourceFile
          *
-         * @return ImageWrapper
+         * @return ImageDescriptor
          */
-        public function scaleLargeEdge(File $file, $saveToAlias, $size, $enlarge = true, $keepSourceFile = false)
+        public function scaleLargeEdge(File $file, $directory, $size, $enlarge = TRUE, $keepSourceFile = FALSE)
         {
             $dim = $this->getImageSize($file->getRealPath());
 
             $landscape = $dim['width'] > $dim['height'];
 
-            if ($landscape) {
-                return $this->scale($file, $saveToAlias, $size, 0, $enlarge, $keepSourceFile);
-            } else {
-                return $this->scale($file, $saveToAlias, 0, $size, $enlarge, $keepSourceFile);
+            if ( $landscape ) {
+                return $this->scale($file, $directory, $size, 0, $enlarge, $keepSourceFile);
+            }
+            else {
+                return $this->scale($file, $directory, 0, $size, $enlarge, $keepSourceFile);
             }
         }
 
@@ -53,28 +54,28 @@
 
         /**
          * @param File   $file
-         * @param string $saveToAlias
+         * @param string $directory
          * @param int    $width
          * @param int    $height
          * @param bool   $enlarge
          * @param bool   $keepSourceFile
          *
-         * @return ImageWrapper
+         * @return ImageDescriptor
          */
-        public abstract function scale(File $file, $saveToAlias, $width, $height = 0, $enlarge = true, $keepSourceFile = false);
+        public abstract function scale(File $file, $directory, $width, $height = 0, $enlarge = TRUE, $keepSourceFile = FALSE);
 
         /**
          * @param File   $file
-         * @param string $saveToAlias
+         * @param string $directory
          * @param int    $x
          * @param int    $y
          * @param int    $width
          * @param int    $height
          * @param bool   $keepSourceFile
          *
-         * @return ImageWrapper
+         * @return ImageDescriptor
          */
-        public abstract function crop(File $file, $saveToAlias, $x, $y, $width, $height, $keepSourceFile = false);
+        public abstract function crop(File $file, $directory, $x, $y, $width, $height, $keepSourceFile = FALSE);
 
         /**
          * @param FileManager $fileManager
@@ -99,7 +100,7 @@
          *
          * @return $this
          */
-        public function rollback($onlyLastTransation = false)
+        public function rollback($onlyLastTransation = FALSE)
         {
             $this->fileManager->rollback($onlyLastTransation);
 
@@ -112,20 +113,19 @@
          *
          * @throws ImageProcessorException
          */
-        protected function assertGeneratedName($name, $invocation)
+        protected static function assertGeneratedName($name, $invocation)
         {
-            if (!$name) {
-                $error = sprintf(
-                    "Filename generator's %s() must return string but the result was NULL. Did you implement it properly?",
-                    $invocation
-                );
-                throw new ImageProcessorException($error);
+            if ( !$name ) {
+                throw new ImageProcessorException("Filename generator's $invocation() must return string but the result was empty. Did you implement it properly?");
             }
         }
 
+        /**
+         * @param File $file
+         */
         protected function removeSourceFile(File $file)
         {
-            $directoryAlias = $this->fileManager->guessDirectoryAliasOfFile($file);
-            $this->fileManager->remove($file->getFilename(), $directoryAlias);
+            $directory = $this->fileManager->guessDirectoryOfFile($file);
+            $this->fileManager->remove($file->getFilename(), $directory);
         }
     }

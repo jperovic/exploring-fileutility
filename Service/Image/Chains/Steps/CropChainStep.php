@@ -1,7 +1,7 @@
 <?php
     namespace Exploring\FileUtilityBundle\Service\Image\Chains\Steps;
 
-    use Exploring\FileUtilityBundle\Data\FileWrapper;
+    use Exploring\FileUtilityBundle\Data\FileDescriptor;
     use Exploring\FileUtilityBundle\Service\Image\ImageProcessor;
     use Exploring\FileUtilityBundle\Utility\ArraysUtil;
 
@@ -17,27 +17,27 @@
 
         /**
          * @param ImageProcessor $processor
-         * @param FileWrapper    $fileWrapper
-         * @param string         $saveToAlias
+         * @param FileDescriptor $fileWrapper
+         * @param string         $directory
          * @param array          $arguments
          *
-         * @return FileWrapper
+         * @return FileDescriptor
          */
-        public function execute(ImageProcessor $processor, FileWrapper $fileWrapper, $saveToAlias, array $arguments = array())
+        public function execute(ImageProcessor $processor, FileDescriptor $fileWrapper, $directory, array $arguments = array())
         {
             $arguments = ArraysUtil::transformArrayToAssociative(
-                                   $arguments,
-                                       array('x', 'y', 'width', 'height'),
-                                       array(0, 0, 0, 0)
+                $arguments,
+                array('x', 'y', 'width', 'height'),
+                array(0, 0, 0, 0)
             );
 
             return $processor->crop(
-                             $fileWrapper->getFile(),
-                                 $saveToAlias,
-                                 $arguments['x'],
-                                 $arguments['y'],
-                                 $arguments['width'],
-                                 $arguments['height']
+                $fileWrapper->getFile(),
+                $directory,
+                $arguments['x'],
+                $arguments['y'],
+                $arguments['width'],
+                $arguments['height']
             );
         }
     }

@@ -6,6 +6,10 @@
     use Symfony\Component\DependencyInjection\Container;
     use Symfony\Component\HttpFoundation\File\File;
 
+    /**
+     * Class FileTest
+     * @package Exploring\FileUtilityBundle\Tests
+     */
     class FileTest extends WebTestCase
     {
         /** @var Container */
@@ -26,7 +30,7 @@
             static::$kernel->boot();
             static::$container = static::$kernel->getContainer();
 
-            $this->fm = new FileManager(array('t' => 'temp'), __DIR__ . '/Resources/');
+            $this->fm = new FileManager(array('temp'), __DIR__ . '/Resources');
             $this->testFile = new File(__DIR__ . '/Resources/tomask.png');
         }
 
@@ -37,7 +41,7 @@
 
         public function testUpload()
         {
-            $wrap = $this->fm->save($this->testFile, 't', false, true);
+            $wrap = $this->fm->save($this->testFile, 'temp', FALSE, TRUE);
 
             $this->assertTrue(file_exists($wrap->getFile()->getRealPath()));
 
@@ -48,7 +52,7 @@
 
         public function testUploadThenRemoveFile()
         {
-            $wrap = $this->fm->save($this->testFile, 't', false, true);
+            $wrap = $this->fm->save($this->testFile, 'temp', FALSE, TRUE);
 
             $this->fm->commit();
 
@@ -63,7 +67,7 @@
 
         public function testUploadFileRemoveItThenRollback()
         {
-            $wrap = $this->fm->save($this->testFile, 't', false, true);
+            $wrap = $this->fm->save($this->testFile, 'temp', FALSE, TRUE);
 
             $this->fm->commit();
 
@@ -81,64 +85,47 @@
             $this->fm->commit();
         }
 
-        public function testUploadAndGuessDirectoryAlias()
+        public function testUploadAndGuessDirectory()
         {
-            $wrap = $this->fm->save($this->testFile, 't', false, true);
+            $wrap = $this->fm->save($this->testFile, 'temp', FALSE, TRUE);
 
-            $alias = $this->fm->guessDirectoryAliasOfFile($wrap->getFile());
+            $directory = $this->fm->guessDirectoryOfFile($wrap->getFile());
 
-            $this->assertEquals('t', $alias);
+            $this->assertEquals('temp', $directory);
         }
 
-        public function testUploadThenRebuildTestWrapperUsingFilenameAndAlias()
+        public function testUploadThenRebuildTestWrapperUsingFilenameAndDirectory()
         {
-            $wrap = $this->fm->save($this->testFile, 't', false, true);
+            $wrap = $this->fm->save($this->testFile, 'temp', FALSE, TRUE);
 
             $filename = $wrap->getFile()->getFilename();
-            $alias = $wrap->getDirectoryAlias();
+            $directory = $wrap->getDirectory();
 
-            $wrap2 = $this->fm->getFileWrapper($filename, $alias);
+            $wrap2 = $this->fm->getFileDescriptor($filename, $directory);
 
             $this->assertEquals($filename, $wrap2->getFile()->getFilename());
-            $this->assertEquals($alias, $wrap2->getDirectoryAlias());
+            $this->assertEquals($directory, $wrap2->getDirectory());
         }
 
         /**
          * @expectedException \Exploring\FileUtilityBundle\Service\File\FileManagerException
          */
-        public function testResolveInvalidAliasToDirectory()
+        public function testResolveInvalidDirectory()
         {
-            $this->fm->resolveDirectoryAlias('some.non.existent.alias');
+            $this->fm->getRealPath('some.non.existent.directory');
         }
 
         public function testStripUploadPathFromRealPath()
         {
-            $wrap = $this->fm->save($this->testFile, 't', false, true);
+            $wrap = $this->fm->save($this->testFile, 'temp', FALSE, TRUE);
 
             $absoulute = $wrap->getFile()->getRealPath();
 
-            $striped = $this->fm->stripAbsolutePath($absoulute, 't');
+            $striped = $this->fm->stripAbsolutePath($absoulute, 'temp');
 
             $this->assertNotNull($striped);
 
             $this->assertEquals($striped, $wrap->getFile()->getFilename());
-        }
-
-        public function testUploadFileThenStartAnotherTransactionAndRemoveItThenRollbackLast()
-        {
-            $wrap = $this->fm->save($this->testFile, 't', false, true);
-
-            $this->assertTrue(file_exists($wrap->getFile()->getRealPath()));
-
-            $this->fm->beginTransaction();
-
-            $this->fm->removeFile($wrap);
-
-            $this->assertFalse(file_exists($wrap->getFile()->getRealPath()));
-
-            $this->fm->rollback(true);
-
-            $this->assertTrue(file_exists($wrap->getFile()->getRealPath()));
         }
 
         /**
@@ -146,7 +133,7 @@
          */
         public function testTryToResolveInvalidFile()
         {
-            $this->fm->getFileWrapper('foo.jpg', 't');
+            $this->fm->getFileDescriptor('foo.jpg', 'temp');
         }
     }
  

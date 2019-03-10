@@ -1,6 +1,8 @@
 <?php
     namespace Exploring\FileUtilityBundle\Service\Image;
 
-    class ImageProcessorException extends \Exception
+    use Exploring\FileUtilityBundle\Service\File\FileManagerException;
+
+    class ImageProcessorException extends FileManagerException
     {
     }

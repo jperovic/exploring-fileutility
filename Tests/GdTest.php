@@ -1,7 +1,6 @@
 <?php
     namespace Exploring\FileUtilityBundle\Tests;
 
-
     use Exploring\FileUtilityBundle\Service\File\FileManager;
     use Exploring\FileUtilityBundle\Service\Image\GDImageEngine;
     use Exploring\FileUtilityBundle\Service\Image\ImageProcessor;
@@ -10,7 +9,7 @@
     {
         public function setUp()
         {
-            $fm = new FileManager(array('t' => 'temp', 'd' => ''), __DIR__ . '/Resources/');
+            $fm = new FileManager(array('temp'), __DIR__ . '/Resources/');
             $this->ip = new ImageProcessor($fm, new GDImageEngine(array(
                 'quality' => array(
                     'jpeg' => 75,

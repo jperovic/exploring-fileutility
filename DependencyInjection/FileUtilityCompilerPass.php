@@ -7,10 +7,6 @@
 
     class FileUtilityCompilerPass implements CompilerPassInterface
     {
-        const ENGINE_GD = "gd";
-
-        const ENGINE_IMAGICK = "imagick";
-
         /**
          * You can modify the container here before it is dumped to PHP code.
          *
@@ -20,76 +16,57 @@
          */
         public function process(ContainerBuilder $container)
         {
-            $directoryAliases = $container->getParameter("exploring_file_utility.directories");
             $uploadRoot = $container->getParameter("exploring_file_utility.upload_root");
             $filenameGenerator = $container->getParameter("exploring_file_utility.filename_generator");
 
-            $aliasNames = array_keys($directoryAliases);
-            $keyIsNumberMatch = 0;
-            for ($i = 0; $i < count($aliasNames); $i++) {
-                $keyIsNumberMatch += (is_numeric($aliasNames[$i]) && $i == $aliasNames[$i]) ? 1 : 0;
-            }
+            $availableSubdirs = array();
+            /** @var \DirectoryIterator[] $dirIterator */
+            $dirIterator = new \DirectoryIterator($uploadRoot);
 
-            if ($keyIsNumberMatch == count($directoryAliases)) {
-                $normalizesAliasNames = array();
-                foreach ($directoryAliases as $n) {
-                    $normalizesAliasNames[] = strtolower(
-                        preg_replace(
-                            array('/([A-Z]+)([A-Z][a-z])/', '/([a-z\d])([A-Z])/', '/\s/'),
-                            array('\\1_\\2', '\\1_\\2', '_'),
-                            strtr($n, '_', '.')
-                        )
-                    );
+            foreach ( $dirIterator as $dir ) {
+                if ( $dir->isDir() && !$dir->isDot() ) {
+                    $availableSubdirs[] = $dir->getFilename();
                 }
-
-                $aliases = array_combine($normalizesAliasNames, $directoryAliases);
-            } else {
-                $aliases = $directoryAliases;
             }
 
-            if ($filenameGenerator) {
+            if ( $filenameGenerator ) {
                 $filenameGenerator = new Reference($container->getParameter(
-                                                             "exploring_file_utility.filename_generator"
+                    "exploring_file_utility.filename_generator"
                 ));
             }
 
             $container->getDefinition("exploring_file_utility.manager")
-                      ->setArguments(array($aliases, $uploadRoot, $filenameGenerator));
+                ->setArguments(array($availableSubdirs, $uploadRoot, $filenameGenerator));
 
-            $chainExecutorRef = null;
+            $chainExecutorRef = NULL;
             $chains = $container->getParameter('exploring_file_utility.image_chains');
 
-            if ($chains) {
+            if ( $chains ) {
                 $taggedChainSteps = array_keys($container->findTaggedServiceIds('exploring_file_utility.image_chain_step'));
 
                 $stepRefs = array();
 
-                foreach ($taggedChainSteps as $stepName) {
+                foreach ( $taggedChainSteps as $stepName ) {
                     $stepRefs[] = $container->getDefinition($stepName);
                 }
 
                 $container->getDefinition('exploring_file_utility.image_chain_executor')
-                          ->setArguments(
-                          array(
-                              $chains,
-                              $stepRefs
-                          )
-                    );
+                    ->setArguments(array($chains, $stepRefs));
 
                 $chainExecutorRef = new Reference('exploring_file_utility.image_chain_executor');
             }
 
             $imageEngineService = $container->getParameter("exploring_file_utility.image_engine");
 
-            switch ($imageEngineService) {
-                case self::ENGINE_GD:
+            switch ( $imageEngineService ) {
+                case Constants::ENGINE_GD:
                     $arguments = array(
                         new Reference("exploring_file_utility.manager"),
                         new Reference("exploring_file_utility.imageengine_gd"),
                         $chainExecutorRef
                     );
                     break;
-                case self::ENGINE_IMAGICK:
+                case Constants::ENGINE_IMAGICK:
                     $arguments = array(
                         new Reference("exploring_file_utility.manager"),
                         new Reference("exploring_file_utility.imageengine_imagick"),
@@ -105,7 +82,6 @@
             }
 
             $container->getDefinition("exploring_file_utility.imageprocessor")
-                      ->setArguments($arguments);
-
+                ->setArguments($arguments);
         }
     }
