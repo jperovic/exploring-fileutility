@@ -216,7 +216,45 @@
             $newImage = imagecreatetruecolor($width, $height);
             imagealphablending($newImage, FALSE);
             imagesavealpha($newImage, TRUE);
-            imagecopyresampled($newImage, $image, 0, 0, $x, $y, $width, $height, $width, $height);
+            $transparent = imagecolorallocatealpha($newImage, 255, 255, 255, 127);
+            imagefilledrectangle($newImage, $x, $y, $width, $height, $transparent);
+
+            $dstW = $srcW = $width;
+            $dstH = $srcH = $height;
+            $srcX = $x;
+            $srcY = $y;
+
+            if ($dstW > $w)
+            {
+                $dstW = $w;
+                $srcW = $w;
+            }
+            if ($dstH > $h)
+            {
+                $dstH = $h;
+                $srcH = $h;
+            }
+
+            if ($x < 0)
+            {
+                $dstX = abs($x);
+                $srcX = 0;
+            }
+            else
+            {
+                $dstX = 0;
+            }
+            if ($y < 0)
+            {
+                $dstY = abs($y);
+                $srcY = 0;
+            }
+            else
+            {
+                $dstY = 0;
+            }
+
+            imagecopyresampled($newImage, $image, $dstX, $dstY, $srcX, $srcY, $dstW, $dstH, $srcW, $srcH);
             imagedestroy($image);
 
             $this->saveImageObject($newImage, $type, $destination);
