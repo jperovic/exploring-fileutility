@@ -2,10 +2,10 @@
 
     namespace Exploring\FileUtilityBundle\Service\Cache;
 
-    use Monolog\Logger;
     use Symfony\Component\Config\ConfigCache;
     use Symfony\Component\HttpKernel\CacheClearer\CacheClearerInterface;
     use Symfony\Component\HttpKernel\CacheWarmer\CacheWarmerInterface;
+    use Symfony\Component\HttpKernel\Log\Logger;
 
     class DirectoryNamesCacheWarmer implements CacheWarmerInterface, CacheClearerInterface
     {
