@@ -1,6 +1,6 @@
 {
     "name": "exploring/fileutility",
-    "version": "3.0",
+    "version": "3.2",
     "license": "MIT",
     "type": "library",
     "description": "File utility bundle",
