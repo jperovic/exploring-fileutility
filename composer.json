@@ -5,7 +5,7 @@
     "description": "File utility bundle",
     "require": {
         "php": ">=5.3.3",
-        "symfony/http-foundation": "2.*"
+        "symfony/http-foundation": "2.*|3.*"
     },
     "target-dir": "Exploring/FileUtilityBundle",
     "autoload": {
