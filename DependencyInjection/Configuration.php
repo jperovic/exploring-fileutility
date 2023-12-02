@@ -23,11 +23,9 @@
          */
         public function getConfigTreeBuilder()
         {
-            $treeBuilder = new TreeBuilder();
-            $rootNode = $treeBuilder->root('exploring_file_utility');
+            $treeBuilder = new TreeBuilder('exploring_file_utility');
 
-            /** @noinspection PhpUndefinedMethodInspection */
-            $rootNode
+            $treeBuilder->getRootNode()
                 ->children()
                     ->arrayNode('directories')->useAttributeAsKey('name')->requiresAtLeastOneElement()
                         ->prototype('scalar')->end()
